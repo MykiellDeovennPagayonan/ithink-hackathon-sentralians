@@ -1,0 +1,84 @@
+type UserClassroom = 
+ record {
+   classroomId: text;
+   isAdmin: bool;
+   joinedAt: Time;
+   userId: text;
+ };
+type User = 
+ record {
+   createdAt: Time;
+   email: text;
+   id: text;
+   password: text;
+   username: text;
+ };
+type Time = int;
+type Solution = 
+ record {
+   id: text;
+   imageUrl: text;
+   isCorrect: bool;
+   notes: text;
+   problemId: text;
+   submittedAt: Time;
+   userId: text;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+type Problem = 
+ record {
+   classroomId: opt text;
+   createdAt: Time;
+   description: text;
+   id: text;
+   imageUrl: opt text;
+   isPublic: bool;
+   title: text;
+ };
+type Classroom = 
+ record {
+   createdAt: Time;
+   description: text;
+   id: text;
+   name: text;
+   ownerId: text;
+ };
+service : {
+  createClassroom: (Classroom) -> (Result);
+  createProblem: (Problem) -> (Result);
+  createUser: (User) -> (Result);
+  deleteClassroom: (text) -> (Result);
+  deleteProblem: (text) -> (Result);
+  deleteSolution: (text) -> (Result);
+  deleteUser: (text) -> (Result);
+  getClassroomAdmins: (text) -> (vec UserClassroom);
+  getClassroomById: (text) -> (opt Classroom);
+  getClassroomMembers: (text) -> (vec UserClassroom);
+  getClassroomsByOwner: (text) -> (vec Classroom);
+  getCorrectSolutions: (text) -> (vec Solution);
+  getProblemById: (text) -> (opt Problem);
+  getProblemsByClassroom: (text) -> (vec Problem);
+  getPublicProblems: () -> (vec Problem);
+  getSolutionById: (text) -> (opt Solution);
+  getSolutionsByProblem: (text) -> (vec Solution);
+  getSolutionsByUser: (text) -> (vec Solution);
+  getUserByEmail: (text) -> (opt User);
+  getUserById: (text) -> (opt User);
+  getUserClassrooms: (text) -> (vec UserClassroom);
+  isClassroomAdmin: (text, text) -> (bool);
+  isClassroomMember: (text, text) -> (bool);
+  joinClassroom: (text, text, bool) -> (Result);
+  leaveClassroom: (text, text) -> (Result);
+  makeUserAdmin: (text, text) -> (Result);
+  markSolutionAsCorrect: (text) -> (Result);
+  removeUserAdmin: (text, text) -> (Result);
+  submitSolution: (Solution) -> (Result);
+  updateClassroom: (Classroom) -> (Result);
+  updateProblem: (Problem) -> (Result);
+  updateSolution: (Solution) -> (Result);
+  updateUser: (User) -> (Result);
+}
