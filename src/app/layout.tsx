@@ -1,20 +1,13 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Script from "next/script";
-import Navbar from "@/components/navbar";
+import React from 'react';
+import type { Metadata } from 'next';
+import './globals.css';
+import Script from 'next/script';
+import Navbar from '@/components/navbar';
+import { AuthProvider } from '@/contexts/AuthContext';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 export const metadata: Metadata = {
-  title: "AI Teaching Platform",
-  description: "Discover AI-powered learning experiences",
+  title: 'AI Teaching Platform',
+  description: 'Discover AI-powered learning experiences',
 };
 
 export default function RootLayout({
@@ -64,11 +57,11 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
-        {children}
+      <body className="antialiased">
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
