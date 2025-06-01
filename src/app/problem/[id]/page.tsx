@@ -1,63 +1,100 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  ArrowLeft,
-  Users,
-  BookOpen,
-  Plus,
-  Clock,
-  TrendingUp,
-  Crown,
-} from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { ArrowLeft, Upload, Camera, X, Send } from "lucide-react";
 import Link from "next/link";
+import CameraCapture from "@/components/camera-capture";
 import { mockProblems } from "@/mockdata/problems";
-import { mockClassrooms, mockClassroomMembers } from "@/mockdata/classrooms";
 
-interface ClassroomPageProps {
+interface ProblemPageProps {
   params: Promise<{
-    code: string;
+    id: string;
   }>;
 }
 
-const getInitials = (name: string) => {
-  const nameParts = name.split(" ");
-  if (nameParts.length >= 2) {
-    return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-};
+interface MathJax {
+  typesetPromise: (elements?: Element[]) => Promise<void>;
+  startup: {
+    defaultReady: () => void;
+  };
+}
 
-export default function ClassroomPage({ params }: ClassroomPageProps) {
+declare global {
+  interface Window {
+    MathJax: MathJax;
+  }
+}
+
+export default function ProblemPage({ params }: ProblemPageProps) {
   // Properly unwrap the params Promise using React.use()
   const resolvedParams = React.use(params);
-  const { code } = resolvedParams;
+  const { id } = resolvedParams;
 
-  // In a real app, you would fetch the classroom data based on the code
-  const classroom =
-    mockClassrooms.find((c) => c.id === code) || mockClassrooms[0];
-  const members = mockClassroomMembers[code] || mockClassroomMembers.MATH101;
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [mathRendered, setMathRendered] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const equationRef = useRef<HTMLDivElement>(null);
 
-  // Get the problems that are in this classroom
-  const classroomProblems = mockProblems.filter((problem) =>
-    classroom.problems.some((cp) => cp.id === problem.id)
-  );
+  // Find the problem by ID
+  const problem = mockProblems.find((p) => p.id === id) || mockProblems[0];
 
-  // Separate members by role
-  const teachers = members.filter((member) => member.role === "teacher");
-  const students = members.filter((member) => member.role === "student");
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const renderMath = async () => {
+      const checkMathJax = () => {
+        return window.MathJax && window.MathJax.typesetPromise;
+      };
+
+      if (checkMathJax()) {
+        try {
+          await window.MathJax.typesetPromise(
+            [equationRef.current].filter(Boolean) as Element[]
+          );
+          setMathRendered(true);
+        } catch (err) {
+          console.log("MathJax error:", err);
+        }
+      } else {
+        // Wait for MathJax to load
+        const interval = setInterval(async () => {
+          if (checkMathJax()) {
+            clearInterval(interval);
+            try {
+              await window.MathJax.typesetPromise(
+                [equationRef.current].filter(Boolean) as Element[]
+              );
+              setMathRendered(true);
+            } catch (err) {
+              console.log("MathJax error:", err);
+            }
+          }
+        }, 100);
+
+        return () => clearInterval(interval);
+      }
+    };
+
+    renderMath();
+  }, [isMounted, problem.latexEquation]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -72,275 +109,311 @@ export default function ClassroomPage({ params }: ClassroomPageProps) {
     }
   };
 
-  // Members content component for reuse
-  const MembersContent = () => (
-    <div className="space-y-3">
-      {/* Teacher/Owner Section */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-          <Crown className="h-3.5 w-3.5 text-yellow-500" />
-          Teacher
-        </h3>
-        {teachers.map((teacher) => (
-          <div
-            key={teacher.id}
-            className="flex items-center gap-3 p-3 rounded-lg bg-blue-50/50 hover:bg-blue-50 transition-colors"
-          >
-            <Avatar className="h-10 w-10 border-2 border-blue-200 flex-shrink-0">
-              <AvatarImage
-                src={teacher.avatar || "/placeholder.svg"}
-                alt={teacher.name}
-              />
-              <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                {getInitials(teacher.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {teacher.name}
-                </p>
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 text-blue-800 text-xs flex-shrink-0"
-                >
-                  Owner
-                </Badge>
-              </div>
-              <p className="text-xs text-gray-500 truncate">{teacher.email}</p>
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openCamera = () => {
+    setIsCameraOpen(true);
+  };
+
+  const closeCamera = () => {
+    // First set the camera as closed
+    setIsCameraOpen(false);
+  };
+
+  const handleCameraCapture = (imageDataUrl: string) => {
+    setUploadedImage(imageDataUrl);
+    closeCamera();
+  };
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setUploadedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async () => {
+    if (!uploadedImage) return;
+
+    setIsSubmitting(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsSubmitting(false);
+
+    // In a real app, this would send the image to AI for analysis
+    alert(
+      "Solution submitted! The AI will analyze your work and provide feedback."
+    );
+  };
+
+  // Don't render the equation content until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="mb-4 sm:mb-6">
+            <Link href="/explore">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Explore
+              </Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
+            <div className="flex flex-col">
+              <Card className="flex-1">
+                <CardContent className="flex items-center justify-center h-full">
+                  <div className="text-gray-500">Loading problem...</div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="flex flex-col">
+              <Card className="flex-1">
+                <CardContent className="flex items-center justify-center h-full">
+                  <div className="text-gray-500">
+                    Loading submission area...
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        ))}
-      </div>
-
-      <Separator />
-
-      {/* Students Section */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1">
-          <Users className="h-3.5 w-3.5" />
-          Students ({students.length})
-        </h3>
-        <div className="max-h-64 overflow-y-auto">
-          {students.map((student) => (
-            <div
-              key={student.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Avatar className="h-10 w-10 flex-shrink-0">
-                <AvatarImage
-                  src={student.avatar || "/placeholder.svg"}
-                  alt={student.name}
-                />
-                <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
-                  {getInitials(student.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {student.name}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {student.email}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-4 sm:mb-6">
-          <Link href="/classroom">
+          <Link href="/explore">
             <Button variant="ghost" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Classrooms
+              Back to Explore
             </Button>
           </Link>
         </div>
 
-        {/* Classroom Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 break-words">
-            {classroom.name}
-          </h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg max-w-4xl mx-auto leading-relaxed break-words">
-            {classroom.description}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mt-4 text-xs sm:text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              {classroom.students} students
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              Created {classroom.created}
-            </div>
-            <Badge variant="outline" className="text-xs flex items-center">
-              Code: {code}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Mobile Members Button */}
-        <div className="lg:hidden mb-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="w-full">
-                <Users className="w-4 h-4 mr-2" />
-                View Members ({members.length})
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[350px] sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Classroom Members
-                </SheetTitle>
-                <p className="text-sm text-gray-600">
-                  {members.length} members
-                </p>
-              </SheetHeader>
-              <div className="mt-6">
-                <MembersContent />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        {/* Main Content - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Left Column - Problems List */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                Classroom Problems
-              </h2>
-              <Button className="w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Problem
-              </Button>
-            </div>
-
-            {classroomProblems.length > 0 ? (
-              <div className="space-y-3">
-                {classroomProblems.map((problem) => {
-                  const problemInfo = classroom.problems.find(
-                    (p) => p.id === problem.id
-                  );
-
-                  return (
-                    <Card
-                      key={problem.id}
-                      className="hover:shadow-md transition-shadow cursor-pointer"
-                    >
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="space-y-4">
-                          {/* Problem Header */}
-                          <div className="flex flex-col sm:flex-row sm:items-start gap-3">
-                            <div className="flex-1 min-w-0 space-y-2">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 break-words">
-                                  {problem.title}
-                                </h3>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    {problem.category}
-                                  </Badge>
-                                  <Badge
-                                    className={`text-xs ${getDifficultyColor(problem.difficulty)}`}
-                                  >
-                                    {problem.difficulty}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <p className="text-gray-600 text-sm leading-relaxed break-words">
-                                {problem.description}
-                              </p>
-                            </div>
-                            <div className="flex-shrink-0 w-full sm:w-auto">
-                              <Button asChild className="w-full sm:w-auto">
-                                <Link href={`/problem/${problem.id}`}>
-                                  Solve
-                                </Link>
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Problem Stats */}
-                          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-gray-500 pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              <span>{problem.participants} attempts</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              <span>{problem.completionRate}% completion</span>
-                            </div>
-                            <div className="hidden sm:block">
-                              Created by {problemInfo?.createdBy}
-                            </div>
-                            <div className="hidden sm:block">
-                              {problemInfo?.createdAt}
-                            </div>
-                            {/* Mobile: Show creator and date on separate lines */}
-                            <div className="sm:hidden w-full flex flex-col gap-1">
-                              <div>Created by {problemInfo?.createdBy}</div>
-                              <div>{problemInfo?.createdAt}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No problems yet</h3>
-                  <p className="text-gray-500 mb-4 max-w-md mx-auto">
-                    This classroom doesn&apos;t have any problems yet. Add some
-                    problems to get started.
-                  </p>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add First Problem
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Classroom Members (Desktop Only) */}
-          <div className="hidden lg:block lg:col-span-1">
-            <Card className="h-fit sticky top-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
+          {/* Left Side - Problem Display */}
+          <div className="flex flex-col order-1 lg:order-1">
+            <Card className="flex-1">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Classroom Members</CardTitle>
-                  <Button variant="outline" size="sm">
-                    <Users className="w-4 h-4 mr-2" />
-                    Invite
-                  </Button>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex-1">
+                    <CardTitle className="text-xl sm:text-2xl lg:text-3xl mb-2 leading-tight">
+                      {problem.title}
+                    </CardTitle>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <Badge variant="secondary" className="text-xs sm:text-sm">
+                        {problem.category}
+                      </Badge>
+                      <Badge
+                        className={`text-xs sm:text-sm ${getDifficultyColor(problem.difficulty)}`}
+                      >
+                        {problem.difficulty}
+                      </Badge>
+                    </div>
+                    <p className="text-gray-600 text-xs sm:text-sm">
+                      Created by {problem.createdBy}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {members.length} members
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col space-y-4 sm:space-y-6">
+                <div>
+                  <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
+                    Problem Description:
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                    {problem.description}
+                  </p>
+                </div>
+
+                <div className="flex-1 flex flex-col">
+                  <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
+                    Problem:
+                  </h3>
+                  <div className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 flex flex-col justify-center overflow-hidden">
+                    <div className="w-full max-w-full">
+                      {!mathRendered && (
+                        <div className="text-gray-500 text-xs sm:text-sm mb-2 text-center">
+                          Rendering equation...
+                        </div>
+                      )}
+                      <div
+                        ref={equationRef}
+                        className="w-full overflow-x-auto overflow-y-hidden mb-4"
+                        style={{
+                          opacity: mathRendered ? 1 : 0,
+                          transition: "opacity 0.3s ease-in-out",
+                          fontSize: "clamp(0.75rem, 2vw, 1.25rem)",
+                          lineHeight: "1.6",
+                        }}
+                      >
+                        <div className="min-w-max px-2 py-1 text-center">{`$$${problem.latexEquation}$$`}</div>
+                      </div>
+
+                      {/* Instructions Section */}
+                      {problem.instructions && (
+                        <div className="border-t border-gray-200 pt-4 mt-4">
+                          <p className="text-blue-700 font-medium text-sm sm:text-base text-center">
+                            {problem.instructions}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Side - Submission Area */}
+          <div className="flex flex-col order-2 lg:order-2">
+            <Card className="flex-1">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">
+                  Submit Your Solution
+                </CardTitle>
+                <p className="text-gray-600 text-xs sm:text-sm">
+                  Upload a photo of your handwritten solution or take a picture
+                  with your camera
                 </p>
               </CardHeader>
-              <CardContent>
-                <MembersContent />
+              <CardContent className="flex-1 flex flex-col space-y-4 sm:space-y-6">
+                {/* Upload/Camera Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-10 sm:h-12 text-sm"
+                    onClick={handleUploadClick}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Image
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-10 sm:h-12 text-sm"
+                    onClick={openCamera}
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Take Photo
+                  </Button>
+                </div>
+
+                {/* Image Preview/Drop Zone */}
+                <div className="flex-1 min-h-[200px] sm:min-h-[250px] lg:min-h-[300px]">
+                  {uploadedImage ? (
+                    <div className="relative h-full border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <img
+                        src={uploadedImage || "/placeholder.svg"}
+                        alt="Uploaded solution"
+                        className="w-full h-full object-contain bg-white"
+                        style={{ maxWidth: "100%", height: "auto" }}
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={handleRemoveImage}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      className="h-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+                      onClick={handleUploadClick}
+                    >
+                      <div className="text-center text-gray-500 p-4">
+                        <Upload className="w-8 sm:w-12 h-8 sm:h-12 mx-auto mb-2 sm:mb-3 opacity-50" />
+                        <p className="text-sm sm:text-lg font-medium mb-1">
+                          Drop your solution here
+                        </p>
+                        <p className="text-xs sm:text-sm">
+                          or click to browse files
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  className="h-10 sm:h-12 text-sm sm:text-lg"
+                  disabled={!uploadedImage || isSubmitting}
+                  onClick={handleSubmit}
+                >
+                  {isSubmitting ? (
+                    "Analyzing..."
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Solution
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Camera Modal */}
+        <Dialog
+          open={isCameraOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeCamera();
+            }
+          }}
+        >
+          <DialogContent
+            className="max-w-none w-full h-full p-0 bg-black border-0 [&>button]:hidden"
+            aria-describedby="camera-description"
+          >
+            <DialogHeader>
+              <VisuallyHidden>
+                <DialogTitle>Camera for capturing solution photo</DialogTitle>
+              </VisuallyHidden>
+              <VisuallyHidden>
+                <DialogDescription id="camera-description">
+                  Use your device camera to take a photo of your solution.
+                  Position your work within the guide frame and tap the capture
+                  button.
+                </DialogDescription>
+              </VisuallyHidden>
+            </DialogHeader>
+
+            <CameraCapture
+              isOpen={isCameraOpen}
+              onCaptureComplete={handleCameraCapture}
+              onCloseCamera={closeCamera}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
       </div>
     </div>
   );
