@@ -22,6 +22,7 @@ export const idlFactory = ({ IDL }) => {
     'username' : IDL.Text,
     'password' : IDL.Text,
     'createdAt' : Time,
+    'salt' : IDL.Text,
     'email' : IDL.Text,
   });
   const UserClassroom = IDL.Record({
@@ -39,6 +40,15 @@ export const idlFactory = ({ IDL }) => {
     'imageUrl' : IDL.Text,
     'notes' : IDL.Text,
   });
+  const LoginCredentials = IDL.Record({
+    'password' : IDL.Text,
+    'email' : IDL.Text,
+  });
+  const Result_2 = IDL.Variant({
+    'ok' : IDL.Record({ 'user' : User, 'sessionToken' : IDL.Text }),
+    'err' : IDL.Text,
+  });
+  const Result_1 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
   return IDL.Service({
     'createClassroom' : IDL.Func([Classroom], [Result], []),
     'createProblem' : IDL.Func([Problem], [Result], []),
@@ -52,6 +62,11 @@ export const idlFactory = ({ IDL }) => {
     'getClassroomMembers' : IDL.Func([IDL.Text], [IDL.Vec(UserClassroom)], []),
     'getClassroomsByOwner' : IDL.Func([IDL.Text], [IDL.Vec(Classroom)], []),
     'getCorrectSolutions' : IDL.Func([IDL.Text], [IDL.Vec(Solution)], []),
+    'getPasswordAndSalt' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(IDL.Record({ 'password' : IDL.Text, 'salt' : IDL.Text }))],
+        [],
+      ),
     'getProblemById' : IDL.Func([IDL.Text], [IDL.Opt(Problem)], []),
     'getProblemsByClassroom' : IDL.Func([IDL.Text], [IDL.Vec(Problem)], []),
     'getPublicProblems' : IDL.Func([], [IDL.Vec(Problem)], []),
@@ -65,14 +80,22 @@ export const idlFactory = ({ IDL }) => {
     'isClassroomMember' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'joinClassroom' : IDL.Func([IDL.Text, IDL.Text, IDL.Bool], [Result], []),
     'leaveClassroom' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
+    'login' : IDL.Func([LoginCredentials], [Result_2], []),
+    'logout' : IDL.Func([IDL.Text], [Result], []),
     'makeUserAdmin' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
     'markSolutionAsCorrect' : IDL.Func([IDL.Text], [Result], []),
+    'register' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [Result_1],
+        [],
+      ),
     'removeUserAdmin' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
     'submitSolution' : IDL.Func([Solution], [Result], []),
     'updateClassroom' : IDL.Func([Classroom], [Result], []),
     'updateProblem' : IDL.Func([Problem], [Result], []),
     'updateSolution' : IDL.Func([Solution], [Result], []),
     'updateUser' : IDL.Func([User], [Result], []),
+    'validateSession' : IDL.Func([IDL.Text], [IDL.Opt(User)], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

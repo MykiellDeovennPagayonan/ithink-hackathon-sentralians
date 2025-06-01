@@ -11,6 +11,7 @@ type User =
    email: text;
    id: text;
    password: text;
+   salt: text;
    username: text;
  };
 type Time = int;
@@ -23,6 +24,19 @@ type Solution =
    problemId: text;
    submittedAt: Time;
    userId: text;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok: record {
+         sessionToken: text;
+         user: User;
+       };
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: User;
  };
 type Result = 
  variant {
@@ -38,6 +52,11 @@ type Problem =
    imageUrl: opt text;
    isPublic: bool;
    title: text;
+ };
+type LoginCredentials = 
+ record {
+   email: text;
+   password: text;
  };
 type Classroom = 
  record {
@@ -60,6 +79,10 @@ service : {
   getClassroomMembers: (text) -> (vec UserClassroom);
   getClassroomsByOwner: (text) -> (vec Classroom);
   getCorrectSolutions: (text) -> (vec Solution);
+  getPasswordAndSalt: (text) -> (opt record {
+                                       password: text;
+                                       salt: text;
+                                     });
   getProblemById: (text) -> (opt Problem);
   getProblemsByClassroom: (text) -> (vec Problem);
   getPublicProblems: () -> (vec Problem);
@@ -73,12 +96,16 @@ service : {
   isClassroomMember: (text, text) -> (bool);
   joinClassroom: (text, text, bool) -> (Result);
   leaveClassroom: (text, text) -> (Result);
+  login: (LoginCredentials) -> (Result_2);
+  logout: (text) -> (Result);
   makeUserAdmin: (text, text) -> (Result);
   markSolutionAsCorrect: (text) -> (Result);
+  register: (text, text, text, text) -> (Result_1);
   removeUserAdmin: (text, text) -> (Result);
   submitSolution: (Solution) -> (Result);
   updateClassroom: (Classroom) -> (Result);
   updateProblem: (Problem) -> (Result);
   updateSolution: (Solution) -> (Result);
   updateUser: (User) -> (Result);
+  validateSession: (text) -> (opt User);
 }
