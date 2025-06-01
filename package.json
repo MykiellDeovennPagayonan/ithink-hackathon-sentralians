@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate": "dfx generate backend && node scripts/patch-canister-env.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -25,6 +26,10 @@
     "react-webcam": "^7.2.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7"
+    "@dfinity/agent": "^2.4.1",
+    "@dfinity/candid": "^2.4.1",
+    "@dfinity/principal": "^2.4.1",
+    "bcryptjs": "^3.0.2",
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
