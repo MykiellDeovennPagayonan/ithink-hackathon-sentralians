@@ -1,34 +1,40 @@
-// src/utils/IdGen.mo
-
+import Users "../models/users";
 import Random "mo:base/Random";
+import Array "mo:base/Array";
 import Nat8 "mo:base/Nat8";
-import Text "mo:base/Text";
-import Iter "mo:base/Iter";
+import Int "mo:base/Int";
+import Time "mo:base/Time";
 
-let charsetArray : [Char] = Iter.toArray(Text.toIter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"));
+module {
+  public func generateUserId(userStore : Users.Use) : async Text {
+    var attempts = 0;
+    let maxAttempts = 5;
 
-let IdGen = object {
-  public func generate() : async Text {
-    let bytes = await Random.blob();
+    while (attempts < maxAttempts) {
+      let entropy = await Random.blob();
+      let seed = Random.Finite(entropy);
 
-    let chars = Iter.map<Nat8, Char>(
-      bytes.vals(),
-      func(b : Nat8) : Char {
-        charsetArray[Nat8.toNat(b) % charsetArray.size()];
-      },
-    );
+      let randomBytes = Array.tabulate<Nat8>(
+        16,
+        func(_) {
+          switch (seed.byte()) {
+            case (?b) b;
+            case null 0;
+          };
+        },
+      );
 
-    Text.fromIter(chars);
-  };
+      var candidateId = "user_";
+      for (byte in randomBytes.vals()) {
+        candidateId := candidateId # Nat8.toText(byte);
+      };
 
-  public func uniqueId(exists : (Text) -> Bool) : async Text {
-    var id = await generate();
-    while (exists(id)) {
-      id := await generate();
+      switch (userStore.pk.get(candidateId)) {
+        case null { return candidateId };
+        case (?_) { attempts += 1 };
+      };
     };
-    return id;
+
+    "user_" # Int.toText(Time.now());
   };
-
 };
-
-IdGen

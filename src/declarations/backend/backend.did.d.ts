@@ -9,6 +9,7 @@ export interface Classroom {
   'createdAt' : Time,
   'description' : string,
 }
+export interface LoginCredentials { 'password' : string, 'email' : string }
 export interface Problem {
   'id' : string,
   'classroomId' : [] | [string],
@@ -19,6 +20,10 @@ export interface Problem {
   'isPublic' : boolean,
 }
 export type Result = { 'ok' : null } |
+  { 'err' : string };
+export type Result_1 = { 'ok' : User } |
+  { 'err' : string };
+export type Result_2 = { 'ok' : { 'user' : User, 'sessionToken' : string } } |
   { 'err' : string };
 export interface Solution {
   'id' : string,
@@ -35,6 +40,7 @@ export interface User {
   'username' : string,
   'password' : string,
   'createdAt' : Time,
+  'salt' : string,
   'email' : string,
 }
 export interface UserClassroom {
@@ -56,6 +62,10 @@ export interface _SERVICE {
   'getClassroomMembers' : ActorMethod<[string], Array<UserClassroom>>,
   'getClassroomsByOwner' : ActorMethod<[string], Array<Classroom>>,
   'getCorrectSolutions' : ActorMethod<[string], Array<Solution>>,
+  'getPasswordAndSalt' : ActorMethod<
+    [string],
+    [] | [{ 'password' : string, 'salt' : string }]
+  >,
   'getProblemById' : ActorMethod<[string], [] | [Problem]>,
   'getProblemsByClassroom' : ActorMethod<[string], Array<Problem>>,
   'getPublicProblems' : ActorMethod<[], Array<Problem>>,
@@ -69,14 +79,18 @@ export interface _SERVICE {
   'isClassroomMember' : ActorMethod<[string, string], boolean>,
   'joinClassroom' : ActorMethod<[string, string, boolean], Result>,
   'leaveClassroom' : ActorMethod<[string, string], Result>,
+  'login' : ActorMethod<[LoginCredentials], Result_2>,
+  'logout' : ActorMethod<[string], Result>,
   'makeUserAdmin' : ActorMethod<[string, string], Result>,
   'markSolutionAsCorrect' : ActorMethod<[string], Result>,
+  'register' : ActorMethod<[string, string, string, string], Result_1>,
   'removeUserAdmin' : ActorMethod<[string, string], Result>,
   'submitSolution' : ActorMethod<[Solution], Result>,
   'updateClassroom' : ActorMethod<[Classroom], Result>,
   'updateProblem' : ActorMethod<[Problem], Result>,
   'updateSolution' : ActorMethod<[Solution], Result>,
   'updateUser' : ActorMethod<[User], Result>,
+  'validateSession' : ActorMethod<[string], [] | [User]>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];
