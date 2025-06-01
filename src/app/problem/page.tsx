@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +18,7 @@ import { ArrowLeft, Upload, Camera, X, Send } from "lucide-react";
 import Link from "next/link";
 import CameraCapture from "@/components/camera-capture";
 import { mockProblems } from "@/mockdata/problems";
-
-interface ProblemPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
+import Image from "next/image";
 
 interface MathJax {
   typesetPromise: (elements?: Element[]) => Promise<void>;
@@ -36,10 +33,9 @@ declare global {
   }
 }
 
-export default function ProblemPage({ params }: ProblemPageProps) {
-  // Properly unwrap the params Promise using React.use()
-  const resolvedParams = React.use(params);
-  const { id } = resolvedParams;
+export default function ProblemPage() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,14 +46,14 @@ export default function ProblemPage({ params }: ProblemPageProps) {
   const equationRef = useRef<HTMLDivElement>(null);
 
   // Find the problem by ID
-  const problem = mockProblems.find((p) => p.id === id) || mockProblems[0];
+  const problem = mockProblems.find((p) => p.id === id);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !problem) return;
 
     const renderMath = async () => {
       const checkMathJax = () => {
@@ -94,7 +90,7 @@ export default function ProblemPage({ params }: ProblemPageProps) {
     };
 
     renderMath();
-  }, [isMounted, problem.latexEquation]);
+  }, [isMounted, problem]); // Updated dependency array
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -125,7 +121,6 @@ export default function ProblemPage({ params }: ProblemPageProps) {
   };
 
   const closeCamera = () => {
-    // First set the camera as closed
     setIsCameraOpen(false);
   };
 
@@ -158,6 +153,56 @@ export default function ProblemPage({ params }: ProblemPageProps) {
       "Solution submitted! The AI will analyze your work and provide feedback."
     );
   };
+
+  // Show error state if no ID provided
+  if (!id) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Problem Not Found
+            </h1>
+            <p className="text-gray-600 mb-6">
+              No problem ID was provided in the URL.
+            </p>
+            <Link href="/explore">
+              <Button>Browse Problems</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if problem not found
+  if (!problem) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="mb-4 sm:mb-6">
+            <Link href="/explore">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Explore
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Problem Not Found
+            </h1>
+            <p className="text-gray-600 mb-6">
+              The problem with ID &quot;{id}&quot; could not be found.
+            </p>
+            <Link href="/explore">
+              <Button>Browse Problems</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Don't render the equation content until mounted to prevent hydration mismatch
   if (!isMounted) {
@@ -319,7 +364,7 @@ export default function ProblemPage({ params }: ProblemPageProps) {
                 <div className="flex-1 min-h-[200px] sm:min-h-[250px] lg:min-h-[300px]">
                   {uploadedImage ? (
                     <div className="relative h-full border-2 border-gray-200 rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={uploadedImage || "/placeholder.svg"}
                         alt="Uploaded solution"
                         className="w-full h-full object-contain bg-white"

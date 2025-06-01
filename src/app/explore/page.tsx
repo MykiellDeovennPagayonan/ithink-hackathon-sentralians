@@ -24,13 +24,13 @@ export default function ExplorePage() {
 
   const handleClassroomJoin = () => {
     if (classroomCode.trim()) {
-      router.push(`/classroom/${classroomCode}`);
+      router.push(`/classroom?code=${classroomCode}`);
     }
   };
 
   const handleProblemJoin = () => {
     if (problemCode.trim()) {
-      router.push(`/problem/${problemCode}`);
+      router.push(`/problem?id=${problemCode}`);
     }
   };
 
@@ -95,7 +95,7 @@ export default function ExplorePage() {
                 value={classroomCode}
                 onChange={(e) => setClassroomCode(e.target.value)}
                 className="text-center text-base sm:text-lg h-12"
-                onKeyPress={(e) => e.key === "Enter" && handleClassroomJoin()}
+                onKeyDown={(e) => e.key === "Enter" && handleClassroomJoin()}
               />
               <Button
                 onClick={handleClassroomJoin}
@@ -123,7 +123,7 @@ export default function ExplorePage() {
                 value={problemCode}
                 onChange={(e) => setProblemCode(e.target.value)}
                 className="text-center text-base sm:text-lg h-12"
-                onKeyPress={(e) => e.key === "Enter" && handleProblemJoin()}
+                onKeyDown={(e) => e.key === "Enter" && handleProblemJoin()}
               />
               <Button
                 onClick={handleProblemJoin}
@@ -190,7 +190,7 @@ export default function ExplorePage() {
               <Card
                 key={problem.id}
                 className="hover:shadow-sm transition-shadow cursor-pointer"
-                onClick={() => router.push(`/problem/${problem.id}`)}
+                onClick={() => router.push(`/problem?id=${problem.id}`)}
               >
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
