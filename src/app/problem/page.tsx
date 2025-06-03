@@ -9,7 +9,7 @@ import ProblemDisplay from "@/components/problem/problem-display";
 import SolutionSubmission from "@/components/solution-submission";
 import { mockProblems } from "@/mockdata/problems";
 
-export default function ProblemPageRefactored() {
+export default function Page() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
