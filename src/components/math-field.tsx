@@ -42,6 +42,18 @@ const MathField = forwardRef<MathFieldRef, MathFieldProps>(
     const [mathfieldInstance, setMathfieldInstance] =
       useState<MathfieldElement | null>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Check if mobile
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768);
+      };
+
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
+      return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     useImperativeHandle(
       ref,
@@ -152,20 +164,24 @@ const MathField = forwardRef<MathFieldRef, MathFieldProps>(
             ref={mathFieldRef}
             className={`math-field-container border rounded-md p-2 min-h-[40px] flex-1 ${className}`}
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={toggleKeyboard}
-            className="shrink-0"
-            title={
-              isKeyboardVisible
-                ? "Hide Virtual Keyboard"
-                : "Show Virtual Keyboard"
-            }
-          >
-            <Keyboard className="w-4 h-4" />
-          </Button>
+          {!isMobile ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleKeyboard}
+              className="shrink-0"
+              title={
+                isKeyboardVisible
+                  ? "Hide Virtual Keyboard"
+                  : "Show Virtual Keyboard"
+              }
+            >
+              <Keyboard className="w-4 h-4" />
+            </Button>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     );
