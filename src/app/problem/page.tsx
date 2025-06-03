@@ -367,6 +367,8 @@ export default function ProblemPage() {
                       <Image
                         src={uploadedImage || "/placeholder.svg"}
                         alt="Uploaded solution"
+                        width={128}
+                        height={128}
                         className="w-full h-full object-contain bg-white"
                         style={{ maxWidth: "100%", height: "auto" }}
                       />
