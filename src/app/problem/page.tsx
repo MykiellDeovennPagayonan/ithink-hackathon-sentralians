@@ -8,6 +8,7 @@ import Link from "next/link";
 import ProblemDisplay from "@/components/problem/problem-display";
 import SolutionSubmission from "@/components/solution-submission";
 import { mockProblems } from "@/mockdata/problems";
+import { mockClassrooms } from "@/mockdata/classrooms";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -15,8 +16,39 @@ export default function Page() {
 
   const [isMounted, setIsMounted] = useState(false);
 
-  // Find the problem by ID
-  const problem = mockProblems.find((p) => p.id === id);
+  const rawProblem = mockProblems.find((p) => p.id === id);
+
+  const classroom =
+    rawProblem && rawProblem.classroomId
+      ? (() => {
+          const c = mockClassrooms.find((c) => c.id === rawProblem.classroomId);
+          const classroomCreatedAt =
+            c && c.createdAt ? new Date(c.createdAt) : new Date();
+          // If invalid, fallback to now
+          return c
+            ? {
+                ...c,
+                createdAt: isNaN(classroomCreatedAt.getTime())
+                  ? new Date()
+                  : classroomCreatedAt,
+              }
+            : null;
+        })()
+      : null;
+
+  const problem =
+    rawProblem && classroom
+      ? {
+          ...rawProblem,
+          classroom,
+          imageUrl: rawProblem.imageUrl ?? undefined,
+          createdAt: rawProblem.createdAt
+            ? isNaN(new Date(rawProblem.createdAt).getTime())
+              ? new Date()
+              : new Date(rawProblem.createdAt)
+            : new Date(),
+        }
+      : undefined;
 
   useEffect(() => {
     setIsMounted(true);

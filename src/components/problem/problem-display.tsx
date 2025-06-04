@@ -1,16 +1,24 @@
+/* eslint-disable @next/next/no-img-element */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import MathRenderer from "../math-renderer";
+import ProblemDescriptionRenderer from "../problem-description-renderer";
 
 interface Problem {
   id: string;
   title: string;
   description: string;
-  category: string;
-  difficulty: string;
-  createdBy: string;
-  latexEquation: string;
-  instructions?: string;
+  imageUrl?: string;
+  classroom: Classroom;
+  isPublic: boolean;
+  createdAt: Date;
+}
+
+interface Classroom {
+  id: string;
+  name: string;
+  description: string;
+  ownerId: string;
+  createdAt: Date;
 }
 
 interface ProblemDisplayProps {
@@ -22,17 +30,12 @@ export default function ProblemDisplay({
   problem,
   className = "",
 }: ProblemDisplayProps) {
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy":
-        return "bg-green-100 text-green-800";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "Hard":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(date);
   };
 
   return (
@@ -45,16 +48,17 @@ export default function ProblemDisplay({
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <Badge variant="secondary" className="text-xs sm:text-sm">
-                {problem.category}
+                {problem.classroom.name}
               </Badge>
               <Badge
-                className={`text-xs sm:text-sm ${getDifficultyColor(problem.difficulty)}`}
+                variant={problem.isPublic ? "default" : "outline"}
+                className="text-xs sm:text-sm"
               >
-                {problem.difficulty}
+                {problem.isPublic ? "Public" : "Private"}
               </Badge>
             </div>
             <p className="text-gray-600 text-xs sm:text-sm">
-              Created by {problem.createdBy}
+              Created on {formatDate(problem.createdAt)}
             </p>
           </div>
         </div>
@@ -64,29 +68,34 @@ export default function ProblemDisplay({
           <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
             Problem Description:
           </h3>
-          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-            {problem.description}
-          </p>
+          <div className="text-gray-700 leading-relaxed text-sm sm:text-base">
+            <ProblemDescriptionRenderer content={problem.description} />
+          </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
-          <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
-            Problem:
-          </h3>
-          <div className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 flex flex-col justify-center overflow-hidden">
-            <div className="w-full max-w-full">
-              <MathRenderer latex={problem.latexEquation} className="mb-4" />
-
-              {/* Instructions Section */}
-              {problem.instructions && (
-                <div className="border-t border-gray-200 pt-4 mt-4">
-                  <p className="text-blue-700 font-medium text-sm sm:text-base text-center">
-                    {problem.instructions}
-                  </p>
-                </div>
-              )}
+        {problem.imageUrl && (
+          <div className="flex-1 flex flex-col">
+            <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
+              Problem Image:
+            </h3>
+            <div className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 flex flex-col justify-center overflow-hidden">
+              <div className="w-full max-w-full flex justify-center">
+                <img
+                  src={problem.imageUrl || "/placeholder.svg"}
+                  alt={`Problem: ${problem.title}`}
+                  className="max-w-full h-auto rounded-lg shadow-sm"
+                />
+              </div>
             </div>
           </div>
+        )}
+
+        <div className="text-xs sm:text-sm text-gray-500 pt-2 border-t border-gray-100">
+          <p>
+            Classroom:{" "}
+            <span className="font-medium">{problem.classroom.name}</span>
+          </p>
+          <p className="mt-1">{problem.classroom.description}</p>
         </div>
       </CardContent>
     </Card>
