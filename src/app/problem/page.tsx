@@ -17,38 +17,38 @@ export default function Page() {
   const [isMounted, setIsMounted] = useState(false);
 
   const rawProblem = mockProblems.find((p) => p.id === id);
+  
+  // Handle cases where a problem might not have a classroom
+  const classroom = rawProblem?.classroomId 
+    ? (() => {
+        const c = mockClassrooms.find((c) => c.id === rawProblem.classroomId);
+        const classroomCreatedAt =
+          c && c.createdAt ? new Date(c.createdAt) : new Date();
+        // If invalid, fallback to now
+        return c
+          ? {
+              ...c,
+              createdAt: isNaN(classroomCreatedAt.getTime())
+                ? new Date()
+                : classroomCreatedAt,
+            }
+          : null;
+      })()
+    : null;  // No classroom ID means no classroom needed
 
-  const classroom =
-    rawProblem && rawProblem.classroomId
-      ? (() => {
-          const c = mockClassrooms.find((c) => c.id === rawProblem.classroomId);
-          const classroomCreatedAt =
-            c && c.createdAt ? new Date(c.createdAt) : new Date();
-          // If invalid, fallback to now
-          return c
-            ? {
-                ...c,
-                createdAt: isNaN(classroomCreatedAt.getTime())
-                  ? new Date()
-                  : classroomCreatedAt,
-              }
-            : null;
-        })()
-      : null;
-
-  const problem =
-    rawProblem && classroom
-      ? {
-          ...rawProblem,
-          classroom,
-          imageUrl: rawProblem.imageUrl ?? undefined,
-          createdAt: rawProblem.createdAt
-            ? isNaN(new Date(rawProblem.createdAt).getTime())
-              ? new Date()
-              : new Date(rawProblem.createdAt)
-            : new Date(),
-        }
-      : undefined;
+  const problem = rawProblem
+    ? {
+        ...rawProblem,
+        // Include classroom only if it exists
+        ...(classroom && { classroom }),
+        imageUrl: rawProblem.imageUrl ?? undefined,
+        createdAt: rawProblem.createdAt
+          ? isNaN(new Date(rawProblem.createdAt).getTime())
+            ? new Date()
+            : new Date(rawProblem.createdAt)
+          : new Date(),
+      }
+    : undefined;
 
   useEffect(() => {
     setIsMounted(true);

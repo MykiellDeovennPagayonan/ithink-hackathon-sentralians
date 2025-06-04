@@ -8,9 +8,11 @@ interface Problem {
   title: string;
   description: string;
   imageUrl?: string;
-  classroom: Classroom;
+  classroom?: Classroom;
   isPublic: boolean;
   createdAt: Date;
+  category: string;
+  difficulty: string;
 }
 
 interface Classroom {
@@ -38,6 +40,19 @@ export default function ProblemDisplay({
     }).format(date);
   };
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "Easy":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Hard":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
   return (
     <Card className={`flex-1 ${className}`}>
       <CardHeader className="pb-4">
@@ -48,13 +63,13 @@ export default function ProblemDisplay({
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <Badge variant="secondary" className="text-xs sm:text-sm">
-                {problem.classroom.name}
+                {problem.category}
               </Badge>
               <Badge
-                variant={problem.isPublic ? "default" : "outline"}
-                className="text-xs sm:text-sm"
+                className={`text-xs sm:text-sm border ${getDifficultyColor(problem.difficulty)}`}
+                variant="outline"
               >
-                {problem.isPublic ? "Public" : "Private"}
+                {problem.difficulty}
               </Badge>
             </div>
             <p className="text-gray-600 text-xs sm:text-sm">
@@ -68,7 +83,7 @@ export default function ProblemDisplay({
           <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
             Problem Description:
           </h3>
-          <div className="text-gray-700 leading-relaxed text-sm sm:text-base">
+          <div className="text-gray-700 leading-relaxed text-sm sm:text-base bg-gray-50 rounded-lg p-4">
             <ProblemDescriptionRenderer content={problem.description} />
           </div>
         </div>
@@ -90,13 +105,15 @@ export default function ProblemDisplay({
           </div>
         )}
 
-        <div className="text-xs sm:text-sm text-gray-500 pt-2 border-t border-gray-100">
-          <p>
-            Classroom:{" "}
-            <span className="font-medium">{problem.classroom.name}</span>
-          </p>
-          <p className="mt-1">{problem.classroom.description}</p>
-        </div>
+        {problem.classroom && (
+          <div className="text-xs sm:text-sm text-gray-500 pt-2 border-t border-gray-100">
+            <p>
+              Classroom:{" "}
+              <span className="font-medium">{problem.classroom.name}</span>
+            </p>
+            <p className="mt-1">{problem.classroom.description}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

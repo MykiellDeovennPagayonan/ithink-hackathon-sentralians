@@ -14,3 +14,9 @@ export const ProblemInputSchema = z.object({
 });
 
 export type ProblemInput = z.infer<typeof ProblemInputSchema>;
+
+export const ProblemOutputSchema = ProblemInputSchema.extend({
+  createdAt: z.date(),
+});
+
+export type ProblemOutput = z.infer<typeof ProblemOutputSchema>;

@@ -1,13 +1,27 @@
+// Define problem categories and difficulties
+export const categories = [
+  "All",
+  "Algebra",
+  "Calculus",
+  "Statistics",
+  "Physics",
+  "Chemistry",
+];
+export const difficulties = ["Easy", "Medium", "Hard"];
+
+// Updated Problems data matching the Problem schema with only categories and difficulties added
 export const mockProblems = [
   {
     id: "1",
-    title: "Linear Equations Fundamentals",
+    title: "Test",
     description:
-      "Solve the system of equations: $$\\begin{cases} 2x + 3y = 12 \\\\ 4x - y = 5 \\end{cases}$$ using elimination or substitution. Show all your work and clearly indicate your final answer.",
+      "Hello\nWorld! Next is a space$$\\frac13a=\\frac17c$$Solve this and show your final answer.",
     imageUrl: null,
-    classroomId: "MATH101",
+    classroomId: null,
     isPublic: true,
     createdAt: 1704240000000000000, // Time.Time format (nanoseconds)
+    category: "Algebra",
+    difficulty: "Medium",
   },
   {
     id: "2",
@@ -18,6 +32,8 @@ export const mockProblems = [
     classroomId: "MATH101",
     isPublic: true,
     createdAt: 1704067200000000000,
+    category: "Physics",
+    difficulty: "Hard",
   },
   {
     id: "3",
@@ -28,6 +44,8 @@ export const mockProblems = [
     classroomId: "MATH101",
     isPublic: true,
     createdAt: 1703894400000000000,
+    category: "Calculus",
+    difficulty: "Medium",
   },
   {
     id: "4",
@@ -38,16 +56,20 @@ export const mockProblems = [
     classroomId: "STAT303",
     isPublic: true,
     createdAt: 1704153600000000000,
+    category: "Statistics",
+    difficulty: "Medium",
   },
   {
     id: "5",
     title: "Chemical Equilibrium Constant",
     description:
-      "For the reaction: $$\\text{PCl}_5(g) \\rightleftharpoons \\text{PCl}_3(g) + \\text{Cl}_2(g)$$, and given concentrations: Initial $$[\\text{PCl}_5] = 0.30\\text{ M}$$, Equilibrium $$[\\text{PCl}_3] = 0.20\\text{ M}$$, calculate the equilibrium constant $$K_c$$.",
+      "For the reaction: $$\\text{PCl}_5(g) \\rightleftharpoons \\text{PCl}_3(g) + \\text{Cl}_2(g)$$\n\nand given concentrations:\n\nInitial $$[\\text{PCl}_5] = 0.30\\text{ M}$$\n\nEquilibrium $$[\\text{PCl}_3] = 0.20\\text{ M}$$\n\ncalculate the equilibrium constant $$K_c$$.",
     imageUrl: null,
     classroomId: null, // Public problem not assigned to classroom
     isPublic: true,
     createdAt: 1704326400000000000,
+    category: "Chemistry",
+    difficulty: "Hard",
   },
   {
     id: "6",
@@ -58,6 +80,8 @@ export const mockProblems = [
     classroomId: "ALG202",
     isPublic: true,
     createdAt: 1704067200000000000,
+    category: "Algebra",
+    difficulty: "Easy",
   },
   {
     id: "7",
@@ -68,6 +92,8 @@ export const mockProblems = [
     classroomId: "ALG202",
     isPublic: true,
     createdAt: 1703894400000000000,
+    category: "Physics",
+    difficulty: "Hard",
   },
   {
     id: "8",
@@ -78,5 +104,7 @@ export const mockProblems = [
     classroomId: "MATH101",
     isPublic: true,
     createdAt: 1704067200000000000,
+    category: "Calculus",
+    difficulty: "Medium",
   },
 ];

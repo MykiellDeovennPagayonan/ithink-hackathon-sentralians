@@ -1,26 +1,50 @@
 import { backend } from "@/declarations/backend";
-import { ProblemInput } from "../lib/zod-schema/problem-input-schema";
+import {
+  ProblemInput,
+  ProblemInputSchema,
+} from "../lib/zod-schema/problem-schema";
 import { toCandidOpt } from "@/utils/candid";
+
+export interface TempProblem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string | null;
+  classroomId?: string | null;
+  isPublic?: boolean;
+  createdAt: Date;
+}
 
 export async function createProblem(
   problem: ProblemInput
 ): Promise<ProblemInput> {
-  console.log("Creating problem:", problem);
+  try {
+    console.log("Creating problem:", problem);
 
-  const uuid = crypto.randomUUID();
-  await backend.createProblem({
-    ...problem,
-    id: uuid,
-    classroomId: toCandidOpt(problem.classroomId),
-    imageUrl: toCandidOpt(problem.imageUrl),
-    createdAt: BigInt(Date.now()),
-  });
+    const parsedClassroom = ProblemInputSchema.safeParse(problem);
+    if (!parsedClassroom.success) {
+      console.error("Invalid classroom data:", parsedClassroom.error);
+      throw new Error("Invalid classroom data");
+    }
 
-  return {
-    ...problem,
-    id: uuid,
-    createdAt: new Date(Number(Date.now())),
-  };
+    const uuid = crypto.randomUUID();
+    await backend.createProblem({
+      ...problem,
+      id: uuid,
+      classroomId: toCandidOpt(problem.classroomId),
+      imageUrl: toCandidOpt(problem.imageUrl),
+      createdAt: BigInt(Date.now()),
+    });
+
+    return {
+      ...problem,
+      id: uuid,
+      createdAt: new Date(Number(Date.now())),
+    };
+  } catch (error) {
+    console.error("Error creating problem:", error);
+    throw error;
+  }
 }
 
 // // Mock function to get a problem by ID (replace with actual API call)
