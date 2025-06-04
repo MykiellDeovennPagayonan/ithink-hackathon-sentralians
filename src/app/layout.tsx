@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Script from 'next/script';
 import Navbar from '@/components/navbar';
-// import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'AI Teaching Platform',
@@ -58,10 +58,10 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        {/* <AuthProvider> */}
+        <AuthProvider>
           <Navbar />
           {children}
-        {/* </AuthProvider> */}
+        </AuthProvider>
       </body>
     </html>
   );
