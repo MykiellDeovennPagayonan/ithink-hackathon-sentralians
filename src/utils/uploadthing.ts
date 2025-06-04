@@ -11,5 +11,5 @@ export const ourFileRouter = {
 } satisfies FileRouter;
 
 export const { useUploadThing } = generateReactHelpers<typeof ourFileRouter>({
-  url: "http://localhost:3000/api/uploadthing" 
+  url: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/uploadthing`
 });

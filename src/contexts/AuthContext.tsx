@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { backend } from '@/declarations/backend';
-import { generateSalt, hashPasswordWithSalt, comparePassword } from '@/app/utils/crypto';
+import { generateSalt, hashPasswordWithSalt, comparePassword } from '@/utils/crypto';
 import { User } from '@/declarations/backend/backend.did';
 
 interface AuthContextType {
