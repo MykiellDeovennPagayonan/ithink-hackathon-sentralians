@@ -11,6 +11,8 @@ interface SolveProblemRequest {
   image_url?: string;
 }
 
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
+
 export async function solveProblem(
   question: string,
   imageUrl?: string
@@ -24,7 +26,7 @@ export async function solveProblem(
       requestBody.image_url = imageUrl;
     }
 
-    const response = await fetch('/api/solve-problem', {
+    const response = await fetch(`${SERVER_URL}/api/ai/solve-problem`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

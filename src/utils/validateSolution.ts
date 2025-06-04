@@ -11,12 +11,14 @@ interface ValidateSolutionRequest {
   image_url: string;
 }
 
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
+
 export async function validateSolution(
   question: string,
   imageUrl: string
 ): Promise<FunctionCallResponse> {
   try {
-    const response = await fetch('/api/validate-solution', {
+    const response = await fetch(`${SERVER_URL}/api/ai/validate-solution`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

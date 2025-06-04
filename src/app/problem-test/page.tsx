@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { mockProblems } from "@/mockdata/problems";
-import SubmissionArea from "@/components/SubmissionArea"; // Add this import
+import SubmissionArea from "@/components/SubmissionArea";
+import { validateSolution } from "@/utils/validateSolution";
 
 interface MathJax {
   typesetPromise: (elements?: Element[]) => Promise<void>;
@@ -98,7 +99,8 @@ export default function ProblemPage() {
     console.log("Upload completed:", imageUrl);
   };
 
-  const handleUploadError = () => {;
+  const handleUploadError = () => {
+    ;
     console.error("Upload failed");
   };
 
@@ -106,11 +108,9 @@ export default function ProblemPage() {
     setIsSubmitting(true);
     console.log(imageUrl)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      alert(
-        "Solution submitted! The AI will analyze your work and provide feedback."
-      );
+      const question = `Engineers from Sonza Industrial Plant have determined that a small amount of a newly available chemical additive will increase the water repellency of Sonza's tent fabric by 20%. The plant supervisor has arranged to purchased the additive through a 5-year contract at $7000 per year, starting 1 year from now. He expects the annual price to increase by 12% per year starting in the sixth year and thereafter through year 13. Additionally, an initial investment of $35,000 was made now to prepare a site suitable for the contractor to deliver the additive. Use i = 15% per year to determine the equivalent total present worth for all these cash flows.`
+      const validation = await validateSolution(question, imageUrl)
+      console.log(validation)
     } catch (error) {
       console.error("Submission error:", error);
       alert("Failed to submit solution. Please try again.");

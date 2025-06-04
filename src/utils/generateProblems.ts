@@ -12,13 +12,15 @@ interface GenerateProblemsRequest {
   num_questions: number;
 }
 
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
+
 export async function generateProblems(
   topic: string,
   referenceQuestion: string,
   numQuestions: number
 ): Promise<FunctionCallResponse> {
   try {
-    const response = await fetch('/api/generate-problems', {
+    const response = await fetch(`${SERVER_URL}/api/ai/generate-problems`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
