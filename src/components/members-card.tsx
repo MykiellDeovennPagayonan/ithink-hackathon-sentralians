@@ -25,7 +25,7 @@ export default function MembersCard({
           <CardTitle className="text-lg">Classroom Members</CardTitle>
           {isAdmin && (
             <Button variant="outline" size="sm" asChild>
-              <a href={`/classroom/${classroom.id}/invite`}>
+              <a href={`/classroom/invite?code=${classroom.id}`}>
                 <Users className="w-4 h-4 mr-2" />
                 Invite
               </a>

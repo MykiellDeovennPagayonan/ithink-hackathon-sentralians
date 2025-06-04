@@ -26,10 +26,12 @@ interface JoinClassroomDialogProps {
     | "ghost"
     | "link"
     | "destructive";
+  userId: string;
 }
 
 export default function JoinClassroomDialog({
   buttonVariant = "default",
+  userId,
 }: JoinClassroomDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -41,7 +43,7 @@ export default function JoinClassroomDialog({
 
     try {
       setIsLoading(true);
-      await joinClassroom(code);
+      await joinClassroom(userId, code);
 
       toast.success("Joined classroom successfully!");
       setCode("");

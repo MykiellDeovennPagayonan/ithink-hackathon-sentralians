@@ -20,11 +20,13 @@ import { Classroom } from "@/services/classroom-service";
 interface ClassroomListProps {
   classrooms: Classroom[];
   searchTerm: string;
+  userId: string;
 }
 
 export default function ClassroomList({
   classrooms,
   searchTerm,
+  userId,
 }: ClassroomListProps) {
   const [filteredClassrooms, setFilteredClassrooms] = useState<Classroom[]>([]);
 
@@ -54,8 +56,8 @@ export default function ClassroomList({
             : "Join your first classroom to get started with collaborative learning."}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <JoinClassroomDialog buttonVariant="outline" />
-          <CreateClassroomDialog />
+          <JoinClassroomDialog buttonVariant="outline" userId={userId} />
+          <CreateClassroomDialog userId={userId} />
         </div>
       </div>
     );

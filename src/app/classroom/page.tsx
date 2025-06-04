@@ -8,11 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ClassroomList from "@/components/classroom-list";
 import ClassroomSearch from "@/components/classroom-search";
-import ClassroomActions from "@/components/classroom-actions";
-import {
-  getUserClassroomsWithDetails,
-  Classroom,
-} from "@/services/classroom-service";
+import { getClassroomsByOwner, Classroom } from "@/services/classroom-service";
 import { useGetCurrentUser } from "@/services/auth-service";
 import LoadingSpinner from "@/components/loading-spinner";
 import ClassroomDetail from "@/components/classroom-detail";
@@ -23,16 +19,13 @@ export default function ClassroomPageClient() {
   const searchTerm = searchParams.get("search") || "";
 
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useGetCurrentUser();
 
   useEffect(() => {
     const fetchClassrooms = async () => {
       if (!user) return;
-      setLoading(true);
-      const classrooms = await getUserClassroomsWithDetails(user.id);
+      const classrooms = await getClassroomsByOwner(user.id);
       setClassrooms(classrooms);
-      setLoading(false);
     };
 
     if (user) {
@@ -60,18 +53,6 @@ export default function ClassroomPageClient() {
     return <NotLoggedInView />;
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <NotLoggedInView />;
-  }
-
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -85,7 +66,7 @@ export default function ClassroomPageClient() {
               Manage your classes and assignments
             </p>
           </div>
-          <ClassroomActions />
+          {/* <ClassroomActions userId={user.id} /> */}
         </div>
 
         {/* Search */}
@@ -93,7 +74,11 @@ export default function ClassroomPageClient() {
 
         {/* Classrooms Grid */}
         <Suspense fallback={<LoadingSpinner />}>
-          <ClassroomList classrooms={classrooms} searchTerm={searchTerm} />
+          <ClassroomList
+            classrooms={classrooms}
+            searchTerm={searchTerm}
+            userId={user.id}
+          />
         </Suspense>
       </div>
     </div>
@@ -119,13 +104,13 @@ function NotLoggedInView() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="h-12 px-8" asChild>
-              <Link href="/login">
+              <Link href="/motoko-login">
                 <LogIn className="mr-2 h-4 w-4" />
                 Log In
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8" asChild>
-              <Link href="/signup">
+              <Link href="/motoko-register">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Sign Up
               </Link>

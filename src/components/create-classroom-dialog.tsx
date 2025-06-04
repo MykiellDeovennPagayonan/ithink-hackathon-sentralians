@@ -19,7 +19,7 @@ import { Plus } from "lucide-react";
 import { createClassroom } from "@/services/classroom-service";
 import { toast } from "sonner";
 
-export default function CreateClassroomDialog() {
+export default function CreateClassroomDialog({ userId }: { userId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -27,11 +27,15 @@ export default function CreateClassroomDialog() {
   const router = useRouter();
 
   const handleCreateClassroom = async () => {
+    if (!userId) {
+      toast.error("You must be logged in to create a classroom");
+      return;
+    }
     if (!name.trim()) return;
 
     try {
       setIsLoading(true);
-      const classroomId = await createClassroom(name, description);
+      const classroomId = await createClassroom(name, description, userId);
 
       toast.success(`Classroom "${name}" created successfully!`);
       setName("");

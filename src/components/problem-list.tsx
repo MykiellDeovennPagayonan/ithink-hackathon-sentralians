@@ -24,7 +24,7 @@ export default function ProblemList({ problems, isAdmin }: ProblemListProps) {
           </p>
           {isAdmin && (
             <Button asChild>
-              <Link href={`/classroom/${problems[0]?.classroomId}/problem/new`}>
+              <Link href="/problem/create">
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Problem
               </Link>

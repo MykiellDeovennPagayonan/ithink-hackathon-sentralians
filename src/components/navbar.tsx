@@ -6,7 +6,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,14 +34,6 @@ import {
   Brain,
 } from "lucide-react";
 
-// Mock user state - in a real app, this would come from your auth provider
-const mockUser = {
-  isLoggedIn: true, // Change to true to see logged-in state
-  name: "John Doe",
-  email: "john@example.com",
-  avatar: "/placeholder.svg?height=32&width=32",
-};
-
 const navigationItems = [
   {
     name: "Explore",
@@ -52,13 +45,14 @@ const navigationItems = [
     name: "Classroom",
     href: "/classroom",
     icon: Users,
-    requiresAuth: true,
+    requiresAuth: false,
   },
 ];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/" && pathname === "/") return true;
@@ -67,8 +61,8 @@ export default function Navbar() {
   };
 
   const handleSignOut = () => {
-    // In a real app, this would handle sign out logic
     console.log("Sign out clicked");
+    logout();
   };
 
   const handleAuthRequiredClick = (e: React.MouseEvent, itemName: string) => {
@@ -96,7 +90,7 @@ export default function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navigationItems.map((item) => {
               const Icon = item.icon;
-              const canAccess = !item.requiresAuth || mockUser.isLoggedIn;
+              const canAccess = !item.requiresAuth || user;
 
               if (canAccess) {
                 return (
@@ -130,7 +124,7 @@ export default function Navbar() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            {mockUser.isLoggedIn ? (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -138,10 +132,16 @@ export default function Navbar() {
                     className="relative h-8 w-8 rounded-full"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={mockUser.avatar || "/placeholder.svg"}
-                        alt={mockUser.name}
-                      />
+                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                        {user.username ? (
+                          user.username
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                        ) : (
+                          <User className="h-4 w-4" />
+                        )}
+                      </AvatarFallback>
                       <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
@@ -152,10 +152,10 @@ export default function Navbar() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {mockUser.name}
+                        {user.username}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {mockUser.email}
+                        {user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -178,10 +178,10 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/login">Log in</Link>
+                  <Link href="/motoko-login">Log in</Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link href="/signup">Sign up</Link>
+                  <Link href="/motoko-register">Sign up</Link>
                 </Button>
               </div>
             )}
@@ -216,8 +216,7 @@ export default function Navbar() {
                   <div className="flex flex-col space-y-2">
                     {navigationItems.map((item) => {
                       const Icon = item.icon;
-                      const canAccess =
-                        !item.requiresAuth || mockUser.isLoggedIn;
+                      const canAccess = !item.requiresAuth || user;
 
                       if (canAccess) {
                         return (
@@ -255,24 +254,30 @@ export default function Navbar() {
 
                   {/* Mobile Auth Section */}
                   <div className="border-t pt-4">
-                    {mockUser.isLoggedIn ? (
+                    {user ? (
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-3 px-3 py-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage
-                              src={mockUser.avatar || "/placeholder.svg"}
-                              alt={mockUser.name}
-                            />
+                            <AvatarFallback className="bg-blue-100 text-blue-600">
+                              {user.username ? (
+                                user.username
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                              ) : (
+                                <User className="h-4 w-4" />
+                              )}
+                            </AvatarFallback>
                             <AvatarFallback>
                               <User className="h-4 w-4" />
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium">
-                              {mockUser.name}
+                              {user.username}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {mockUser.email}
+                              {user.email}
                             </span>
                           </div>
                         </div>

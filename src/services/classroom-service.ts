@@ -19,7 +19,8 @@ export interface Classroom {
 
 export async function createClassroom(
   name: string,
-  description: string
+  description: string,
+  userId: string
 ): Promise<string> {
   try {
     const classroomId = `classroom_${Date.now()}`;
@@ -27,8 +28,8 @@ export async function createClassroom(
       id: classroomId,
       name,
       description,
-      ownerId: "current_user_id", // In a real app, get this from auth context
-      createdAt: BigInt(Date.now() * 1000000), // Convert to nanoseconds
+      ownerId: userId,
+      createdAt: BigInt(Date.now()),
     };
 
     const result = await backend.createClassroom(classroom);
@@ -46,18 +47,17 @@ export async function createClassroom(
   }
 }
 
-export async function joinClassroom(classroomId: string): Promise<void> {
+export async function joinClassroom(
+  userId: string,
+  classroomId: string
+): Promise<void> {
   try {
     const classroomResult = await backend.getClassroomById(classroomId);
     if (classroomResult.length === 0) {
       throw new Error("Classroom not found");
     }
 
-    const result = await backend.joinClassroom(
-      "current_user_id",
-      classroomId,
-      false
-    );
+    const result = await backend.joinClassroom(userId, classroomId, false);
 
     if ("err" in result) {
       throw new Error(result.err);
@@ -68,9 +68,9 @@ export async function joinClassroom(classroomId: string): Promise<void> {
   }
 }
 
-export async function getUserClassrooms(userId: string) {
+export async function getUserClassrooms(classroomId: string) {
   try {
-    const classrooms = await backend.getUserClassrooms(userId);
+    const classrooms = await backend.getUserClassrooms(classroomId);
     return classrooms.map((classroom) => ({
       classroomId: classroom.classroomId,
       userId: classroom.userId,
@@ -97,6 +97,19 @@ export async function getUserClassroomsWithDetails(
     return await Promise.all(classroomPromises);
   } catch (error) {
     console.error("Error fetching user classrooms with details:", error);
+    throw error;
+  }
+}
+
+export async function getClassroomsByOwner(userId: string) {
+  try {
+    const classrooms = await backend.getClassroomsByOwner(userId);
+    return classrooms.map((classroom) => ({
+      ...classroom,
+      createdAt: convertBigIntToDate(classroom.createdAt),
+    }));
+  } catch (error) {
+    console.error("Error fetching classrooms by owner:", error);
     throw error;
   }
 }
