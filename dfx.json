@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "canisters": {
+    "backend": {
+      "main": "src/backend/app.mo",
+      "type": "motoko"
+    },
+    "frontend": {
+      "dependencies": [
+        "backend"
+      ],
+      "frontend": {
+        "entrypoint": "build/index.html"
+      },
+      "source": [
+        "build"
+      ],
+      "type": "assets"
+    }
+  },
+  "dfx": "0.24.3",
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": "mops sources"
+    },
+    "start": {
+      "clean": true
+    }
+  }
+}
