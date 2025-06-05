@@ -16,7 +16,7 @@ export interface TempProblem {
   createdAt: Date;
 }
 
-export async function createProblem(problem: ProblemInput): Promise<Problem> {
+export async function createProblem(problem: ProblemInput, userId: string): Promise<Problem> {
   try {
     console.log("Creating problem:", problem);
 
@@ -31,6 +31,7 @@ export async function createProblem(problem: ProblemInput): Promise<Problem> {
       id: [],
       classroomId: toCandidOpt(problem.classroomId),
       imageUrl: toCandidOpt(problem.imageUrl),
+      creatorId: userId,
     });
 
     if ("err" in result) {

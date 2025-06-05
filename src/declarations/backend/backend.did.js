@@ -18,6 +18,7 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Opt(IDL.Text),
     'classroomId' : IDL.Opt(IDL.Text),
     'title' : IDL.Text,
+    'creatorId' : IDL.Text,
     'description' : IDL.Text,
     'imageUrl' : IDL.Opt(IDL.Text),
     'isPublic' : IDL.Bool,
@@ -27,6 +28,7 @@ export const idlFactory = ({ IDL }) => {
     'classroomId' : IDL.Opt(IDL.Text),
     'title' : IDL.Text,
     'createdAt' : Time,
+    'creatorId' : IDL.Text,
     'description' : IDL.Text,
     'imageUrl' : IDL.Opt(IDL.Text),
     'isPublic' : IDL.Bool,
@@ -49,10 +51,13 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_2 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
-  const UserClassroom = IDL.Record({
-    'classroomId' : IDL.Text,
-    'userId' : IDL.Text,
+  const ProblemWithClassroom = IDL.Record({
+    'classroomName' : IDL.Opt(IDL.Text),
+    'problem' : Problem,
+  });
+  const UserWithClassroom = IDL.Record({
     'joinedAt' : Time,
+    'user' : User,
     'isAdmin' : IDL.Bool,
   });
   const Solution = IDL.Record({
@@ -64,9 +69,20 @@ export const idlFactory = ({ IDL }) => {
     'imageUrl' : IDL.Text,
     'notes' : IDL.Text,
   });
+  const ClassroomWithMembership = IDL.Record({
+    'joinedAt' : Time,
+    'isAdmin' : IDL.Bool,
+    'classroom' : Classroom,
+  });
   const UserClassroomInput = IDL.Record({
     'classroomId' : IDL.Text,
     'userId' : IDL.Text,
+    'isAdmin' : IDL.Bool,
+  });
+  const UserClassroom = IDL.Record({
+    'classroomId' : IDL.Text,
+    'userId' : IDL.Text,
+    'joinedAt' : Time,
     'isAdmin' : IDL.Bool,
   });
   const Result_4 = IDL.Variant({ 'ok' : UserClassroom, 'err' : IDL.Text });
@@ -95,9 +111,22 @@ export const idlFactory = ({ IDL }) => {
     'deleteProblem' : IDL.Func([IDL.Text], [Result], []),
     'deleteSolution' : IDL.Func([IDL.Text], [Result], []),
     'deleteUser' : IDL.Func([IDL.Text], [Result], []),
-    'getClassroomAdmins' : IDL.Func([IDL.Text], [IDL.Vec(UserClassroom)], []),
+    'getAllUserProblems' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ProblemWithClassroom)],
+        [],
+      ),
+    'getClassroomAdmins' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(UserWithClassroom)],
+        [],
+      ),
     'getClassroomById' : IDL.Func([IDL.Text], [IDL.Opt(Classroom)], []),
-    'getClassroomMembers' : IDL.Func([IDL.Text], [IDL.Vec(UserClassroom)], []),
+    'getClassroomMembers' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(UserWithClassroom)],
+        [],
+      ),
     'getClassroomsByOwner' : IDL.Func([IDL.Text], [IDL.Vec(Classroom)], []),
     'getCorrectSolutions' : IDL.Func([IDL.Text], [IDL.Vec(Solution)], []),
     'getPasswordAndSalt' : IDL.Func(
@@ -107,13 +136,19 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getProblemById' : IDL.Func([IDL.Text], [IDL.Opt(Problem)], []),
     'getProblemsByClassroom' : IDL.Func([IDL.Text], [IDL.Vec(Problem)], []),
+    'getProblemsByCreator' : IDL.Func([IDL.Text], [IDL.Vec(Problem)], []),
+    'getProblemsByUserId' : IDL.Func([IDL.Text], [IDL.Vec(Problem)], []),
     'getPublicProblems' : IDL.Func([], [IDL.Vec(Problem)], []),
     'getSolutionById' : IDL.Func([IDL.Text], [IDL.Opt(Solution)], []),
     'getSolutionsByProblem' : IDL.Func([IDL.Text], [IDL.Vec(Solution)], []),
     'getSolutionsByUser' : IDL.Func([IDL.Text], [IDL.Vec(Solution)], []),
     'getUserByEmail' : IDL.Func([IDL.Text], [IDL.Opt(User)], []),
     'getUserById' : IDL.Func([IDL.Text], [IDL.Opt(User)], []),
-    'getUserClassrooms' : IDL.Func([IDL.Text], [IDL.Vec(UserClassroom)], []),
+    'getUserClassrooms' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ClassroomWithMembership)],
+        [],
+      ),
     'isClassroomAdmin' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'isClassroomMember' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'joinClassroom' : IDL.Func([UserClassroomInput], [Result_4], []),

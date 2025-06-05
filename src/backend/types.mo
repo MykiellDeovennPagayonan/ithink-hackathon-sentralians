@@ -25,6 +25,7 @@ module {
     description : Text;
     imageUrl : ?Text;
     classroomId : ?Text;
+    creatorId : Text;
     isPublic : Bool;
     createdAt : Time.Time;
   };
@@ -87,6 +88,7 @@ module {
     description : Text;
     imageUrl : ?Text;
     classroomId : ?Text;
+    creatorId : Text;
     isPublic : Bool;
   };
 

@@ -10,6 +10,7 @@ import ClassroomService "services/classroomService";
 import ProblemService "services/problemService";
 import SolutionService "services/solutionService";
 import UserClassroomService "services/userClassroomService";
+import EnhancedService "services/enhancedService";
 import AuthService "services/authService";
 import Result "mo:base/Result";
 
@@ -34,6 +35,7 @@ actor {
   let solutionService = SolutionService.init(solution);
   let userClassroomService = UserClassroomService.init(userClassroom);
   let authService = AuthService.init(user, session);
+  let enhancedService = EnhancedService.init(userClassroom, user, classroom, problem);
 
   public shared func createUser(userInput : Types.UserInput) : async Result.Result<Types.User, Text> {
     await userService.create(userInput);
@@ -99,6 +101,10 @@ actor {
     await problemService.delete(id);
   };
 
+  public shared func getProblemsByCreator(creatorId : Text) : async [Types.Problem] {
+    await problemService.getByCreator(creatorId);
+  };
+
   public shared func submitSolution(solutionInput : Types.SolutionInput) : async Result.Result<Types.Solution, Text> {
     await solutionService.create(solutionInput);
   };
@@ -139,16 +145,16 @@ actor {
     await userClassroomService.leaveClassroom(userId, classroomId);
   };
 
-  public shared func getUserClassrooms(userId : Text) : async [Types.UserClassroom] {
-    await userClassroomService.getUserClassrooms(userId);
+  public shared func getUserClassrooms(userId : Text) : async [EnhancedService.ClassroomWithMembership] {
+    await enhancedService.getUserClassroomsWithDetails(userId);
   };
 
-  public shared func getClassroomMembers(classroomId : Text) : async [Types.UserClassroom] {
-    await userClassroomService.getClassroomMembers(classroomId);
+  public shared func getClassroomMembers(classroomId : Text) : async [EnhancedService.UserWithClassroom] {
+    await enhancedService.getClassroomMembersWithDetails(classroomId);
   };
 
-  public shared func getClassroomAdmins(classroomId : Text) : async [Types.UserClassroom] {
-    await userClassroomService.getClassroomAdmins(classroomId);
+  public shared func getClassroomAdmins(classroomId : Text) : async [EnhancedService.UserWithClassroom] {
+    await enhancedService.getClassroomAdminsWithDetails(classroomId);
   };
 
   public shared func makeUserAdmin(userId : Text, classroomId : Text) : async Result.Result<(), Text> {
@@ -188,5 +194,13 @@ actor {
     salt : Text;
   } {
     await authService.getPasswordAndSalt(email);
+  };
+
+  public shared func getAllUserProblems(userId : Text) : async [EnhancedService.ProblemWithClassroom] {
+    await enhancedService.getAllUserProblems(userId);
+  };
+
+  public shared func getProblemsByUserId(userId : Text) : async [Types.Problem] {
+    await enhancedService.getProblemsByUserId(userId);
   };
 };

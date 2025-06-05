@@ -9,6 +9,7 @@ module ProblemService {
     create             : (Types.ProblemInput) -> async Result.Result<Types.Problem, Text>;
     getById            : (Text) -> async ?Types.Problem;
     getByClassroom     : (Text) -> async [Types.Problem];
+    getByCreator       : (Text) -> async [Types.Problem]; // Add this
     getPublicProblems  : () -> async [Types.Problem];
     update             : (Types.Problem) -> async Result.Result<(), Text>;
     delete             : (Text) -> async Result.Result<(), Text>;
@@ -24,6 +25,10 @@ module ProblemService {
 
       getByClassroom = func(classroomId : Text) : async [Types.Problem] {
         store.classroom.find(classroomId, classroomId, #fwd, 100)
+      };
+
+      getByCreator = func(creatorId : Text) : async [Types.Problem] {
+        store.creator.find(creatorId, creatorId, #fwd, 100)
       };
 
       getPublicProblems = func() : async [Types.Problem] {
@@ -50,10 +55,8 @@ module ProblemService {
   };
 
   private func createImpl(problemInput : Types.ProblemInput, store : Problems.Use) : async Result.Result<Types.Problem, Text> {
-    // Generate or use provided ID
     let problemId = switch (problemInput.id) {
       case (?providedId) {
-        // Check if provided ID already exists
         switch (store.pk.get(providedId)) {
           case (?_) { return #err("Problem ID already exists") };
           case null providedId;
@@ -64,13 +67,13 @@ module ProblemService {
       };
     };
 
-    // Create full problem object with generated fields
     let problem : Types.Problem = {
       id = problemId;
       title = problemInput.title;
       description = problemInput.description;
       imageUrl = problemInput.imageUrl;
       classroomId = problemInput.classroomId;
+      creatorId = problemInput.creatorId;
       isPublic = problemInput.isPublic;
       createdAt = Time.now();
     };

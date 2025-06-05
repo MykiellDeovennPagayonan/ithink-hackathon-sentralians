@@ -1,3 +1,9 @@
+type UserWithClassroom = 
+ record {
+   isAdmin: bool;
+   joinedAt: Time;
+   user: User;
+ };
 type UserInput = 
  record {
    email: text;
@@ -86,9 +92,15 @@ type Result =
    err: text;
    ok;
  };
+type ProblemWithClassroom = 
+ record {
+   classroomName: opt text;
+   problem: Problem;
+ };
 type ProblemInput = 
  record {
    classroomId: opt text;
+   creatorId: text;
    description: text;
    id: opt text;
    imageUrl: opt text;
@@ -99,6 +111,7 @@ type Problem =
  record {
    classroomId: opt text;
    createdAt: Time;
+   creatorId: text;
    description: text;
    id: text;
    imageUrl: opt text;
@@ -109,6 +122,12 @@ type LoginCredentials =
  record {
    email: text;
    password: text;
+ };
+type ClassroomWithMembership = 
+ record {
+   classroom: Classroom;
+   isAdmin: bool;
+   joinedAt: Time;
  };
 type ClassroomInput = 
  record {
@@ -133,9 +152,10 @@ service : {
   deleteProblem: (text) -> (Result);
   deleteSolution: (text) -> (Result);
   deleteUser: (text) -> (Result);
-  getClassroomAdmins: (text) -> (vec UserClassroom);
+  getAllUserProblems: (text) -> (vec ProblemWithClassroom);
+  getClassroomAdmins: (text) -> (vec UserWithClassroom);
   getClassroomById: (text) -> (opt Classroom);
-  getClassroomMembers: (text) -> (vec UserClassroom);
+  getClassroomMembers: (text) -> (vec UserWithClassroom);
   getClassroomsByOwner: (text) -> (vec Classroom);
   getCorrectSolutions: (text) -> (vec Solution);
   getPasswordAndSalt: (text) -> (opt record {
@@ -144,13 +164,15 @@ service : {
                                      });
   getProblemById: (text) -> (opt Problem);
   getProblemsByClassroom: (text) -> (vec Problem);
+  getProblemsByCreator: (text) -> (vec Problem);
+  getProblemsByUserId: (text) -> (vec Problem);
   getPublicProblems: () -> (vec Problem);
   getSolutionById: (text) -> (opt Solution);
   getSolutionsByProblem: (text) -> (vec Solution);
   getSolutionsByUser: (text) -> (vec Solution);
   getUserByEmail: (text) -> (opt User);
   getUserById: (text) -> (opt User);
-  getUserClassrooms: (text) -> (vec UserClassroom);
+  getUserClassrooms: (text) -> (vec ClassroomWithMembership);
   isClassroomAdmin: (text, text) -> (bool);
   isClassroomMember: (text, text) -> (bool);
   joinClassroom: (UserClassroomInput) -> (Result_4);

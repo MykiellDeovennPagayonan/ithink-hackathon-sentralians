@@ -10,7 +10,6 @@ import MembersSheet from "./members-sheet";
 import MembersCard from "./members-card";
 import ProblemList from "./problem-list";
 import {
-  ClassroomMemberWithUserInfo,
   getClassroomById,
   getClassroomMembersWithUserInfo,
   getProblemsByClassroom,
@@ -20,10 +19,11 @@ import {
 import { formatRelativeDate } from "@/lib/formatRelativeDate";
 import { useAuth } from "@/contexts/AuthContext";
 import { TempProblem } from "@/services/problem-service";
+import { UserWithClassroom } from "@/declarations/backend/backend.did";
 
 export default function ClassroomDetail({ code }: { code: string }) {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
-  const [members, setMembers] = useState<ClassroomMemberWithUserInfo[]>([]);
+  const [members, setMembers] = useState<UserWithClassroom[]>([]);
   const [problems, setProblems] = useState<TempProblem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);

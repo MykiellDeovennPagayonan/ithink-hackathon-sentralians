@@ -15,12 +15,18 @@ export interface ClassroomInput {
   'name' : string,
   'description' : string,
 }
+export interface ClassroomWithMembership {
+  'joinedAt' : Time,
+  'isAdmin' : boolean,
+  'classroom' : Classroom,
+}
 export interface LoginCredentials { 'password' : string, 'email' : string }
 export interface Problem {
   'id' : string,
   'classroomId' : [] | [string],
   'title' : string,
   'createdAt' : Time,
+  'creatorId' : string,
   'description' : string,
   'imageUrl' : [] | [string],
   'isPublic' : boolean,
@@ -29,9 +35,14 @@ export interface ProblemInput {
   'id' : [] | [string],
   'classroomId' : [] | [string],
   'title' : string,
+  'creatorId' : string,
   'description' : string,
   'imageUrl' : [] | [string],
   'isPublic' : boolean,
+}
+export interface ProblemWithClassroom {
+  'classroomName' : [] | [string],
+  'problem' : Problem,
 }
 export type Result = { 'ok' : null } |
   { 'err' : string };
@@ -91,6 +102,11 @@ export interface UserInput {
   'salt' : string,
   'email' : string,
 }
+export interface UserWithClassroom {
+  'joinedAt' : Time,
+  'user' : User,
+  'isAdmin' : boolean,
+}
 export interface _SERVICE {
   'createClassroom' : ActorMethod<[ClassroomInput], Result_6>,
   'createProblem' : ActorMethod<[ProblemInput], Result_5>,
@@ -99,9 +115,10 @@ export interface _SERVICE {
   'deleteProblem' : ActorMethod<[string], Result>,
   'deleteSolution' : ActorMethod<[string], Result>,
   'deleteUser' : ActorMethod<[string], Result>,
-  'getClassroomAdmins' : ActorMethod<[string], Array<UserClassroom>>,
+  'getAllUserProblems' : ActorMethod<[string], Array<ProblemWithClassroom>>,
+  'getClassroomAdmins' : ActorMethod<[string], Array<UserWithClassroom>>,
   'getClassroomById' : ActorMethod<[string], [] | [Classroom]>,
-  'getClassroomMembers' : ActorMethod<[string], Array<UserClassroom>>,
+  'getClassroomMembers' : ActorMethod<[string], Array<UserWithClassroom>>,
   'getClassroomsByOwner' : ActorMethod<[string], Array<Classroom>>,
   'getCorrectSolutions' : ActorMethod<[string], Array<Solution>>,
   'getPasswordAndSalt' : ActorMethod<
@@ -110,13 +127,15 @@ export interface _SERVICE {
   >,
   'getProblemById' : ActorMethod<[string], [] | [Problem]>,
   'getProblemsByClassroom' : ActorMethod<[string], Array<Problem>>,
+  'getProblemsByCreator' : ActorMethod<[string], Array<Problem>>,
+  'getProblemsByUserId' : ActorMethod<[string], Array<Problem>>,
   'getPublicProblems' : ActorMethod<[], Array<Problem>>,
   'getSolutionById' : ActorMethod<[string], [] | [Solution]>,
   'getSolutionsByProblem' : ActorMethod<[string], Array<Solution>>,
   'getSolutionsByUser' : ActorMethod<[string], Array<Solution>>,
   'getUserByEmail' : ActorMethod<[string], [] | [User]>,
   'getUserById' : ActorMethod<[string], [] | [User]>,
-  'getUserClassrooms' : ActorMethod<[string], Array<UserClassroom>>,
+  'getUserClassrooms' : ActorMethod<[string], Array<ClassroomWithMembership>>,
   'isClassroomAdmin' : ActorMethod<[string, string], boolean>,
   'isClassroomMember' : ActorMethod<[string, string], boolean>,
   'joinClassroom' : ActorMethod<[UserClassroomInput], Result_4>,
