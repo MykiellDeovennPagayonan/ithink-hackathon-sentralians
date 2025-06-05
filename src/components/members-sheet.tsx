@@ -12,11 +12,11 @@ import { Users } from "lucide-react";
 import MembersList from "./members-list";
 import {
   Classroom,
-  ClassroomMemberWithUserInfo,
 } from "@/services/classroom-service";
+import { UserWithClassroom } from "@/declarations/backend/backend.did";
 
 interface MembersSheetProps {
-  members: ClassroomMemberWithUserInfo[];
+  members: UserWithClassroom[];
   classroom: Classroom;
   isAdmin: boolean;
 }

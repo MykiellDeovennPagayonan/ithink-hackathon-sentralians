@@ -1,4 +1,10 @@
 import { backend } from "@/declarations/backend";
+import {
+  ClassroomInput,
+  ClassroomWithMembership,
+  UserClassroomInput,
+  UserWithClassroom,
+} from "@/declarations/backend/backend.did";
 import { unwrapOpt } from "@/utils/candid";
 import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
@@ -23,13 +29,11 @@ export async function createClassroom(
   userId: string
 ): Promise<string> {
   try {
-    const classroomId = `classroom_${Date.now()}`;
-    const classroom = {
-      id: classroomId,
+    const classroom: ClassroomInput = {
+      id: [],
       name,
       description,
       ownerId: userId,
-      createdAt: BigInt(Date.now()),
     };
 
     const result = await backend.createClassroom(classroom);
@@ -38,9 +42,15 @@ export async function createClassroom(
       throw new Error(result.err);
     }
 
-    await backend.joinClassroom("current_user_id", classroomId, true);
+    const joinClassroomInput: UserClassroomInput = {
+      classroomId: result.ok.id,
+      userId,
+      isAdmin: true,
+    };
 
-    return classroomId;
+    await backend.joinClassroom(joinClassroomInput);
+
+    return result.ok.id;
   } catch (error) {
     console.error("Error creating classroom:", error);
     throw error;
@@ -57,7 +67,13 @@ export async function joinClassroom(
       throw new Error("Classroom not found");
     }
 
-    const result = await backend.joinClassroom(userId, classroomId, false);
+    const joinClassroomInput: UserClassroomInput = {
+      classroomId,
+      userId,
+      isAdmin: false,
+    };
+
+    const result = await backend.joinClassroom(joinClassroomInput);
 
     if ("err" in result) {
       throw new Error(result.err);
@@ -68,33 +84,28 @@ export async function joinClassroom(
   }
 }
 
-export async function getUserClassrooms(classroomId: string) {
-  try {
-    const classrooms = await backend.getUserClassrooms(classroomId);
-    return classrooms.map((classroom) => ({
-      classroomId: classroom.classroomId,
-      userId: classroom.userId,
-      joinedAt: convertBigIntToDate(classroom.joinedAt),
-      isAdmin: classroom.isAdmin,
-    }));
-  } catch (error) {
-    console.error("Error fetching user classrooms:", error);
-    throw error;
-  }
-}
+// export async function getUserClassrooms(classroomId: string) {
+//   try {
+//     const classrooms = await backend.getUserClassrooms(classroomId);
+//     return classrooms.map((classroom) => ({
+//       classroomId: classroom.classroomId,
+//       userId: classroom.userId,
+//       joinedAt: convertBigIntToDate(classroom.joinedAt),
+//       isAdmin: classroom.isAdmin,
+//     }));
+//   } catch (error) {
+//     console.error("Error fetching user classrooms:", error);
+//     throw error;
+//   }
+// }
 
 export async function getUserClassroomsWithDetails(
   userId: string
-): Promise<Classroom[]> {
+): Promise<ClassroomWithMembership[]> {
   try {
-    const userClassrooms = await getUserClassrooms(userId);
+    const userClassrooms = await backend.getUserClassrooms(userId)
 
-    const classroomPromises = userClassrooms.map(async (membership) => {
-      const classroomDetails = await getClassroomById(membership.classroomId);
-      return classroomDetails;
-    });
-
-    return await Promise.all(classroomPromises);
+    return userClassrooms
   } catch (error) {
     console.error("Error fetching user classrooms with details:", error);
     throw error;
@@ -135,12 +146,7 @@ export async function getClassroomMembers(classroomId: string) {
   try {
     const members = await backend.getClassroomMembers(classroomId);
 
-    return members.map((member) => ({
-      userId: member.userId,
-      classroomId: member.classroomId,
-      joinedAt: convertBigIntToDate(member.joinedAt),
-      isAdmin: member.isAdmin,
-    }));
+    return members
   } catch (error) {
     console.error("Error fetching classroom members:", error);
     throw error;
@@ -154,24 +160,11 @@ export interface ClassroomMemberWithUserInfo extends UserClassroom {
 
 export async function getClassroomMembersWithUserInfo(
   classroomId: string
-): Promise<ClassroomMemberWithUserInfo[]> {
+): Promise<UserWithClassroom[]> {
   try {
     const members = await getClassroomMembers(classroomId);
-    const userInfoPromises = members.map(async (member) => {
-      const userInfo = await backend.getUserById(member.userId);
-      if (userInfo.length === 0) {
-        throw new Error(
-          `User information not found for user ID: ${member.userId}`
-        );
-      }
-      return {
-        ...member,
-        email: userInfo[0].email,
-        username: userInfo[0].username,
-      };
-    });
 
-    return Promise.all(userInfoPromises);
+    return members
   } catch (error) {
     console.error("Error fetching classroom members with user info:", error);
     throw error;
@@ -199,7 +192,7 @@ export async function isUserClassroomAdmin(
 ): Promise<boolean> {
   try {
     const members = await backend.getClassroomMembers(classroomId);
-    const userMember = members.find((member) => member.userId === userId);
+    const userMember = members.find((member) => member.user.id === userId);
     return userMember ? userMember.isAdmin : false;
   } catch (error) {
     console.error("Error checking admin status:", error);

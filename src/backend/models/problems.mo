@@ -8,12 +8,14 @@ module Problems {
   public type ProblemPK = Text;
   public type ProblemClassroomKey = Text;
   public type ProblemIsPublicKey = Text;
+  public type ProblemCreatorKey = Text;
 
   public type Init = {
     db        : RXMDB.RXMDB<Types.Problem>;
     pk        : PK.Init<ProblemPK>;
     classroom : IDX.Init<ProblemClassroomKey>;
     isPublic  : IDX.Init<ProblemIsPublicKey>;
+    creator   : IDX.Init<ProblemCreatorKey>;
   };
 
   public func init() : Init {
@@ -22,6 +24,7 @@ module Problems {
       pk        = PK.init<ProblemPK>(?32);
       classroom = IDX.init<ProblemClassroomKey>(?32);
       isPublic  = IDX.init<ProblemIsPublicKey>(?32);
+      creator   = IDX.init<ProblemCreatorKey>(?32);
     };
   };
 
@@ -42,11 +45,14 @@ module Problems {
     }
   };
 
+  public func creator_key(_idx:Nat, h : Types.Problem) : ?ProblemCreatorKey = ?h.creatorId;
+
   public type Use = {
     db        : RXMDB.Use<Types.Problem>;
     pk        : PK.Use<ProblemPK, Types.Problem>;
     classroom : IDX.Use<ProblemClassroomKey, Types.Problem>;
     isPublic  : IDX.Use<ProblemIsPublicKey, Types.Problem>;
+    creator   : IDX.Use<ProblemCreatorKey, Types.Problem>;
   };
 
   public func use(init : Init) : Use {
@@ -83,11 +89,23 @@ module Problems {
     };
     IDX.Subscribe(isPublic_config);
 
+    let creator_config : IDX.Config<ProblemCreatorKey, Types.Problem> = {
+      db        = init.db;
+      obs;
+      store     = init.creator;
+      compare   = Text.compare;
+      key       = creator_key;
+      regenerate= #no;
+      keep      = #all;
+    };
+    IDX.Subscribe(creator_config);
+
     return {
       db        = RXMDB.Use<Types.Problem>(init.db, obs);
       pk        = PK.Use(pk_config);
       classroom = IDX.Use(classroom_config);
       isPublic  = IDX.Use(isPublic_config);
+      creator   = IDX.Use(creator_config);
     };
   };
 }

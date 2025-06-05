@@ -6,7 +6,7 @@ import Time "mo:base/Time";
 
 module UserClassroomService {
   public func init(store : UserClassrooms.Use) : {
-    joinClassroom        : (Text, Text, Bool) -> async Result.Result<(), Text>;
+    joinClassroom        : (Types.UserClassroomInput) -> async Result.Result<Types.UserClassroom, Text>;
     leaveClassroom       : (Text, Text) -> async Result.Result<(), Text>;
     getUserClassrooms    : (Text) -> async [Types.UserClassroom];
     getClassroomMembers  : (Text) -> async [Types.UserClassroom];
@@ -17,8 +17,8 @@ module UserClassroomService {
     isAdmin              : (Text, Text) -> async Bool;
   } {
     return {
-      joinClassroom = func(userId : Text, classroomId : Text, isAdmin : Bool) : async Result.Result<(), Text> {
-        await joinClassroomImpl(userId, classroomId, isAdmin, store);
+      joinClassroom = func(userClassroomInput : Types.UserClassroomInput) : async Result.Result<Types.UserClassroom, Text> {
+        await joinClassroomImpl(userClassroomInput, store);
       };
 
       leaveClassroom = func(userId : Text, classroomId : Text) : async Result.Result<(), Text> {
@@ -72,20 +72,20 @@ module UserClassroomService {
     };
   };
 
-  private func joinClassroomImpl(userId : Text, classroomId : Text, isAdmin : Bool, store : UserClassrooms.Use) : async Result.Result<(), Text> {
-    let key = userId # "#" # classroomId;
+  private func joinClassroomImpl(userClassroomInput : Types.UserClassroomInput, store : UserClassrooms.Use) : async Result.Result<Types.UserClassroom, Text> {
+    let key = userClassroomInput.userId # "#" # userClassroomInput.classroomId;
     let existing = store.pk.get(key);
     switch (existing) {
       case (?_) { #err("User is already a member of this classroom") };
       case null {
         let membership : Types.UserClassroom = {
-          userId      = userId;
-          classroomId = classroomId;
-          isAdmin     = isAdmin;
+          userId      = userClassroomInput.userId;
+          classroomId = userClassroomInput.classroomId;
+          isAdmin     = userClassroomInput.isAdmin;
           joinedAt    = Time.now();
         };
         store.db.insert(membership);
-        #ok
+        #ok(membership);
       };
     };
   };
@@ -95,7 +95,6 @@ module UserClassroomService {
     let existing = store.pk.get(key);
     switch (existing) {
       case (?membership) {
-        // Reconstruct the UserClassroom record explicitly:
         let updated : Types.UserClassroom = {
           userId      = membership.userId;
           classroomId = membership.classroomId;

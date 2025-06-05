@@ -25,6 +25,7 @@ module {
     description : Text;
     imageUrl : ?Text;
     classroomId : ?Text;
+    creatorId : Text;
     isPublic : Bool;
     createdAt : Time.Time;
   };
@@ -64,5 +65,45 @@ module {
     userId : Text;
     expiresAt : Time.Time;
     createdAt : Time.Time;
+  };
+
+  public type UserInput = {
+    id : ?Text;
+    email : Text;
+    password : Text;
+    salt : Text;
+    username : Text;
+  };
+
+  public type ClassroomInput = {
+    id : ?Text;
+    name : Text;
+    description : Text;
+    ownerId : Text;
+  };
+
+  public type ProblemInput = {
+    id : ?Text;
+    title : Text;
+    description : Text;
+    imageUrl : ?Text;
+    classroomId : ?Text;
+    creatorId : Text;
+    isPublic : Bool;
+  };
+
+  public type UserClassroomInput = {
+    userId : Text;
+    classroomId : Text;
+    isAdmin : Bool;
+  };
+
+  public type SolutionInput = {
+    id : ?Text;
+    problemId : Text;
+    userId : Text;
+    imageUrl : Text;
+    isCorrect : Bool;
+    notes : Text;
   };
 };

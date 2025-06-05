@@ -169,7 +169,7 @@ export default function ExplorePage() {
                   className="pl-10 w-full sm:w-80 h-10"
                 />
               </div>
-              <Button className="h-10 whitespace-nowrap">
+              <Button className="h-10 whitespace-nowrap" onClick={() => router.push("/problem/create")}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Problem
               </Button>

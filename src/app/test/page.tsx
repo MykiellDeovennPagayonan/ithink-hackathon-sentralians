@@ -1,7 +1,7 @@
 "use client";
 
+import { UserWithClassroom } from "@/declarations/backend/backend.did";
 import {
-  ClassroomMemberWithUserInfo,
   getClassroomMembersWithUserInfo,
 } from "@/services/classroom-service";
 import { useSearchParams } from "next/navigation";
@@ -10,7 +10,7 @@ import React, { Suspense, useEffect, useState } from "react";
 // Create a client component that uses useSearchParams
 function ClassroomContent() {
   const searchParams = useSearchParams();
-  const [users, setUsers] = useState<ClassroomMemberWithUserInfo[]>([]);
+  const [users, setUsers] = useState<UserWithClassroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [classroomId, setClassroomId] = useState<string | undefined>(undefined);
 
