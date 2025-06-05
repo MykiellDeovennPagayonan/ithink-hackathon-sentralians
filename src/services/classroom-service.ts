@@ -1,4 +1,8 @@
 import { backend } from "@/declarations/backend";
+import {
+  ClassroomInput,
+  UserClassroomInput,
+} from "@/declarations/backend/backend.did";
 import { unwrapOpt } from "@/utils/candid";
 import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
@@ -23,13 +27,11 @@ export async function createClassroom(
   userId: string
 ): Promise<string> {
   try {
-    const classroomId = `classroom_${Date.now()}`;
-    const classroom = {
-      id: classroomId,
+    const classroom: ClassroomInput = {
+      id: [],
       name,
       description,
       ownerId: userId,
-      createdAt: BigInt(Date.now()),
     };
 
     const result = await backend.createClassroom(classroom);
@@ -38,9 +40,15 @@ export async function createClassroom(
       throw new Error(result.err);
     }
 
-    await backend.joinClassroom("current_user_id", classroomId, true);
+    const joinClassroomInput: UserClassroomInput = {
+      classroomId: result.ok.id,
+      userId,
+      isAdmin: true,
+    };
 
-    return classroomId;
+    await backend.joinClassroom(joinClassroomInput);
+
+    return result.ok.id;
   } catch (error) {
     console.error("Error creating classroom:", error);
     throw error;
@@ -57,7 +65,13 @@ export async function joinClassroom(
       throw new Error("Classroom not found");
     }
 
-    const result = await backend.joinClassroom(userId, classroomId, false);
+    const joinClassroomInput: UserClassroomInput = {
+      classroomId,
+      userId,
+      isAdmin: false,
+    };
+
+    const result = await backend.joinClassroom(joinClassroomInput);
 
     if ("err" in result) {
       throw new Error(result.err);

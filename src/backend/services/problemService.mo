@@ -1,10 +1,12 @@
 import Problems "../models/problems";
 import Types "../types";
+import IdGen "../utils/idGen";
 import Result "mo:base/Result";
+import Time "mo:base/Time";
 
 module ProblemService {
   public func init(store : Problems.Use) : {
-    create             : (Types.Problem) -> async Result.Result<(), Text>;
+    create             : (Types.ProblemInput) -> async Result.Result<Types.Problem, Text>;
     getById            : (Text) -> async ?Types.Problem;
     getByClassroom     : (Text) -> async [Types.Problem];
     getPublicProblems  : () -> async [Types.Problem];
@@ -12,8 +14,8 @@ module ProblemService {
     delete             : (Text) -> async Result.Result<(), Text>;
   } {
     return {
-      create = func(problem : Types.Problem) : async Result.Result<(), Text> {
-        await createImpl(problem, store);
+      create = func(problemInput : Types.ProblemInput) : async Result.Result<Types.Problem, Text> {
+        await createImpl(problemInput, store);
       };
 
       getById = func(id : Text) : async ?Types.Problem {
@@ -47,15 +49,34 @@ module ProblemService {
     };
   };
 
-  private func createImpl(problem : Types.Problem, store : Problems.Use) : async Result.Result<(), Text> {
-    let existing = store.pk.get(problem.id);
-    switch (existing) {
-      case (?_) { #err("Problem ID already exists") };
+  private func createImpl(problemInput : Types.ProblemInput, store : Problems.Use) : async Result.Result<Types.Problem, Text> {
+    // Generate or use provided ID
+    let problemId = switch (problemInput.id) {
+      case (?providedId) {
+        // Check if provided ID already exists
+        switch (store.pk.get(providedId)) {
+          case (?_) { return #err("Problem ID already exists") };
+          case null providedId;
+        };
+      };
       case null {
-        store.db.insert(problem);
-        #ok
+        await IdGen.generateProblemId(store);
       };
     };
+
+    // Create full problem object with generated fields
+    let problem : Types.Problem = {
+      id = problemId;
+      title = problemInput.title;
+      description = problemInput.description;
+      imageUrl = problemInput.imageUrl;
+      classroomId = problemInput.classroomId;
+      isPublic = problemInput.isPublic;
+      createdAt = Time.now();
+    };
+
+    store.db.insert(problem);
+    #ok(problem);
   };
 
   private func updateImpl(problem : Types.Problem, store : Problems.Use) : async Result.Result<(), Text> {

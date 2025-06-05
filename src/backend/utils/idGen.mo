@@ -1,12 +1,18 @@
-import Users "../models/users";
 import Random "mo:base/Random";
 import Array "mo:base/Array";
 import Nat8 "mo:base/Nat8";
 import Int "mo:base/Int";
 import Time "mo:base/Time";
+import Text "mo:base/Text";
 
 module {
-  public func generateUserId(userStore : Users.Use) : async Text {
+  public type StoreWithPK<T> = {
+    pk : {
+      get : (Text) -> ?T;
+    };
+  };
+
+  public func generateId(prefix : Text, store : StoreWithPK<Any>) : async Text {
     var attempts = 0;
     let maxAttempts = 5;
 
@@ -15,7 +21,7 @@ module {
       let seed = Random.Finite(entropy);
 
       let randomBytes = Array.tabulate<Nat8>(
-        16,
+        12, // Shorter for readability
         func(_) {
           switch (seed.byte()) {
             case (?b) b;
@@ -24,17 +30,33 @@ module {
         },
       );
 
-      var candidateId = "user_";
+      var candidateId = prefix # "_";
       for (byte in randomBytes.vals()) {
         candidateId := candidateId # Nat8.toText(byte);
       };
 
-      switch (userStore.pk.get(candidateId)) {
+      switch (store.pk.get(candidateId)) {
         case null { return candidateId };
         case (?_) { attempts += 1 };
       };
     };
 
-    "user_" # Int.toText(Time.now());
+    prefix # "_" # Int.toText(Time.now());
   };
-};
+
+  public func generateUserId(store : StoreWithPK<Any>) : async Text {
+    await generateId("user", store);
+  };
+
+  public func generateClassroomId(store : StoreWithPK<Any>) : async Text {
+    await generateId("classroom", store);
+  };
+
+  public func generateProblemId(store : StoreWithPK<Any>) : async Text {
+    await generateId("problem", store);
+  };
+
+  public func generateSolutionId(store : StoreWithPK<Any>) : async Text {
+    await generateId("solution", store);
+  };
+}

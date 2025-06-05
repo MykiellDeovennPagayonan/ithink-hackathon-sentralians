@@ -1,96 +1,59 @@
 "use client";
-
-import type React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import ProblemDisplay from "@/components/problem/problem-display";
 import { mockProblems } from "@/mockdata/problems";
-import SubmissionArea from "@/components/SubmissionArea";
+import { mockClassrooms } from "@/mockdata/classrooms";
 import { validateSolution } from "@/utils/validateSolution";
+import SubmissionArea from "@/components/SubmissionArea";
 
-interface MathJax {
-  typesetPromise: (elements?: Element[]) => Promise<void>;
-  startup: {
-    defaultReady: () => void;
-  };
-}
-
-declare global {
-  interface Window {
-    MathJax: MathJax;
-  }
-}
-
-export default function ProblemPage() {
+export default function Page() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isMounted, setIsMounted] = useState(false);
-  const [mathRendered, setMathRendered] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const equationRef = useRef<HTMLDivElement>(null);
 
-  const problem = mockProblems.find((p) => p.id === id);
+  const rawProblem = mockProblems.find((p) => p.id === id);
+
+  // Handle cases where a problem might not have a classroom
+  const classroom = rawProblem?.classroomId
+    ? (() => {
+      const c = mockClassrooms.find((c) => c.id === rawProblem.classroomId);
+      const classroomCreatedAt =
+        c && c.createdAt ? new Date(c.createdAt) : new Date();
+      // If invalid, fallback to now
+      return c
+        ? {
+          ...c,
+          createdAt: isNaN(classroomCreatedAt.getTime())
+            ? new Date()
+            : classroomCreatedAt,
+        }
+        : null;
+    })()
+    : null;  // No classroom ID means no classroom needed
+
+  const problem = rawProblem
+    ? {
+      ...rawProblem,
+      // Include classroom only if it exists
+      ...(classroom && { classroom }),
+      imageUrl: rawProblem.imageUrl ?? undefined,
+      createdAt: rawProblem.createdAt
+        ? isNaN(new Date(rawProblem.createdAt).getTime())
+          ? new Date()
+          : new Date(rawProblem.createdAt)
+        : new Date(),
+    }
+    : undefined;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!isMounted || !problem) return;
-
-    const renderMath = async () => {
-      const checkMathJax = () => {
-        return window.MathJax && window.MathJax.typesetPromise;
-      };
-
-      if (checkMathJax()) {
-        try {
-          await window.MathJax.typesetPromise(
-            [equationRef.current].filter(Boolean) as Element[]
-          );
-          setMathRendered(true);
-        } catch (err) {
-          console.log("MathJax error:", err);
-        }
-      } else {
-        const interval = setInterval(async () => {
-          if (checkMathJax()) {
-            clearInterval(interval);
-            try {
-              await window.MathJax.typesetPromise(
-                [equationRef.current].filter(Boolean) as Element[]
-              );
-              setMathRendered(true);
-            } catch (err) {
-              console.log("MathJax error:", err);
-            }
-          }
-        }, 100);
-
-        return () => clearInterval(interval);
-      }
-    };
-
-    renderMath();
-  }, [isMounted, problem]);
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy":
-        return "bg-green-100 text-green-800";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "Hard":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const handleUploadStart = () => {
   };
@@ -139,6 +102,7 @@ export default function ProblemPage() {
     );
   }
 
+  // Show error state if problem not found
   if (!problem) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-gray-50">
@@ -167,6 +131,7 @@ export default function ProblemPage() {
     );
   }
 
+  // Don't render the equation content until mounted to prevent hydration mismatch
   if (!isMounted) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-gray-50">
@@ -215,78 +180,12 @@ export default function ProblemPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
+          {/* Left Side - Problem Display */}
           <div className="flex flex-col order-1 lg:order-1">
-            <Card className="flex-1">
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl sm:text-2xl lg:text-3xl mb-2 leading-tight">
-                      {problem.title}
-                    </CardTitle>
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <Badge variant="secondary" className="text-xs sm:text-sm">
-                        {problem.category}
-                      </Badge>
-                      <Badge
-                        className={`text-xs sm:text-sm ${getDifficultyColor(problem.difficulty)}`}
-                      >
-                        {problem.difficulty}
-                      </Badge>
-                    </div>
-                    <p className="text-gray-600 text-xs sm:text-sm">
-                      Created by {problem.createdBy}
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col space-y-4 sm:space-y-6">
-                <div>
-                  <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
-                    Problem Description:
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    {problem.description}
-                  </p>
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <h3 className="font-medium mb-2 sm:mb-3 text-sm sm:text-base">
-                    Problem:
-                  </h3>
-                  <div className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 flex flex-col justify-center overflow-hidden">
-                    <div className="w-full max-w-full">
-                      {!mathRendered && (
-                        <div className="text-gray-500 text-xs sm:text-sm mb-2 text-center">
-                          Rendering equation...
-                        </div>
-                      )}
-                      <div
-                        ref={equationRef}
-                        className="w-full overflow-x-auto overflow-y-hidden mb-4"
-                        style={{
-                          opacity: mathRendered ? 1 : 0,
-                          transition: "opacity 0.3s ease-in-out",
-                          fontSize: "clamp(0.75rem, 2vw, 1.25rem)",
-                          lineHeight: "1.6",
-                        }}
-                      >
-                        <div className="min-w-max px-2 py-1 text-center">{`$$${problem.latexEquation}$$`}</div>
-                      </div>
-
-                      {problem.instructions && (
-                        <div className="border-t border-gray-200 pt-4 mt-4">
-                          <p className="text-blue-700 font-medium text-sm sm:text-base text-center">
-                            {problem.instructions}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ProblemDisplay problem={problem} />
           </div>
 
+          {/* Right Side - Submission Area */}
           <SubmissionArea
             onUploadStart={handleUploadStart}
             onUploadComplete={handleUploadComplete}
@@ -295,7 +194,6 @@ export default function ProblemPage() {
             isSubmitting={isSubmitting}
           />
         </div>
-
       </div>
     </div>
   );

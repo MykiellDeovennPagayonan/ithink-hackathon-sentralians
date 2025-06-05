@@ -35,8 +35,8 @@ actor {
   let userClassroomService = UserClassroomService.init(userClassroom);
   let authService = AuthService.init(user, session);
 
-  public shared func createUser(user : Types.User) : async Result.Result<(), Text> {
-    await userService.create(user);
+  public shared func createUser(userInput : Types.UserInput) : async Result.Result<Types.User, Text> {
+    await userService.create(userInput);
   };
 
   public shared func getUserById(id : Text) : async ?Types.User {
@@ -55,8 +55,8 @@ actor {
     await userService.delete(id);
   };
 
-  public shared func createClassroom(classroom : Types.Classroom) : async Result.Result<(), Text> {
-    await classroomService.create(classroom);
+  public shared func createClassroom(classroomInput : Types.ClassroomInput) : async Result.Result<Types.Classroom, Text> {
+    await classroomService.create(classroomInput);
   };
 
   public shared func getClassroomById(id : Text) : async ?Types.Classroom {
@@ -75,8 +75,8 @@ actor {
     await classroomService.delete(id);
   };
 
-  public shared func createProblem(problem : Types.Problem) : async Result.Result<(), Text> {
-    await problemService.create(problem);
+  public shared func createProblem(problemInput : Types.ProblemInput) : async Result.Result<Types.Problem, Text> {
+    await problemService.create(problemInput);
   };
 
   public shared func getProblemById(id : Text) : async ?Types.Problem {
@@ -99,8 +99,8 @@ actor {
     await problemService.delete(id);
   };
 
-  public shared func submitSolution(solution : Types.Solution) : async Result.Result<(), Text> {
-    await solutionService.create(solution);
+  public shared func submitSolution(solutionInput : Types.SolutionInput) : async Result.Result<Types.Solution, Text> {
+    await solutionService.create(solutionInput);
   };
 
   public shared func getSolutionById(id : Text) : async ?Types.Solution {
@@ -131,8 +131,8 @@ actor {
     await solutionService.delete(id);
   };
 
-  public shared func joinClassroom(userId : Text, classroomId : Text, isAdmin : Bool) : async Result.Result<(), Text> {
-    await userClassroomService.joinClassroom(userId, classroomId, isAdmin);
+  public shared func joinClassroom(userClassroomInput : Types.UserClassroomInput) : async Result.Result<Types.UserClassroom, Text> {
+    await userClassroomService.joinClassroom(userClassroomInput);
   };
 
   public shared func leaveClassroom(userId : Text, classroomId : Text) : async Result.Result<(), Text> {
@@ -167,9 +167,7 @@ actor {
     await userClassroomService.isAdmin(userId, classroomId);
   };
 
-
-
-  public shared func register(email : Text, password : Text, salt: Text, username : Text) : async Result.Result<Types.User, Text> {
+  public shared func register(email : Text, password : Text, salt : Text, username : Text) : async Result.Result<Types.User, Text> {
     await authService.register(email, password, salt, username);
   };
 
@@ -185,7 +183,10 @@ actor {
     await authService.logout(token);
   };
 
-  public shared func getPasswordAndSalt(email: Text) : async ?{ password : Text; salt : Text; } {
+  public shared func getPasswordAndSalt(email : Text) : async ?{
+    password : Text;
+    salt : Text;
+  } {
     await authService.getPasswordAndSalt(email);
-  }
+  };
 };

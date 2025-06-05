@@ -1,3 +1,17 @@
+type UserInput = 
+ record {
+   email: text;
+   id: opt text;
+   password: text;
+   salt: text;
+   username: text;
+ };
+type UserClassroomInput = 
+ record {
+   classroomId: text;
+   isAdmin: bool;
+   userId: text;
+ };
 type UserClassroom = 
  record {
    classroomId: text;
@@ -15,6 +29,15 @@ type User =
    username: text;
  };
 type Time = int;
+type SolutionInput = 
+ record {
+   id: opt text;
+   imageUrl: text;
+   isCorrect: bool;
+   notes: text;
+   problemId: text;
+   userId: text;
+ };
 type Solution = 
  record {
    id: text;
@@ -25,7 +48,22 @@ type Solution =
    submittedAt: Time;
    userId: text;
  };
-type Result_2 = 
+type Result_6 = 
+ variant {
+   err: text;
+   ok: Classroom;
+ };
+type Result_5 = 
+ variant {
+   err: text;
+   ok: Problem;
+ };
+type Result_4 = 
+ variant {
+   err: text;
+   ok: UserClassroom;
+ };
+type Result_3 = 
  variant {
    err: text;
    ok: record {
@@ -33,15 +71,29 @@ type Result_2 =
          user: User;
        };
  };
-type Result_1 = 
+type Result_2 = 
  variant {
    err: text;
    ok: User;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: Solution;
  };
 type Result = 
  variant {
    err: text;
    ok;
+ };
+type ProblemInput = 
+ record {
+   classroomId: opt text;
+   description: text;
+   id: opt text;
+   imageUrl: opt text;
+   isPublic: bool;
+   title: text;
  };
 type Problem = 
  record {
@@ -58,6 +110,13 @@ type LoginCredentials =
    email: text;
    password: text;
  };
+type ClassroomInput = 
+ record {
+   description: text;
+   id: opt text;
+   name: text;
+   ownerId: text;
+ };
 type Classroom = 
  record {
    createdAt: Time;
@@ -67,9 +126,9 @@ type Classroom =
    ownerId: text;
  };
 service : {
-  createClassroom: (Classroom) -> (Result);
-  createProblem: (Problem) -> (Result);
-  createUser: (User) -> (Result);
+  createClassroom: (ClassroomInput) -> (Result_6);
+  createProblem: (ProblemInput) -> (Result_5);
+  createUser: (UserInput) -> (Result_2);
   deleteClassroom: (text) -> (Result);
   deleteProblem: (text) -> (Result);
   deleteSolution: (text) -> (Result);
@@ -94,15 +153,15 @@ service : {
   getUserClassrooms: (text) -> (vec UserClassroom);
   isClassroomAdmin: (text, text) -> (bool);
   isClassroomMember: (text, text) -> (bool);
-  joinClassroom: (text, text, bool) -> (Result);
+  joinClassroom: (UserClassroomInput) -> (Result_4);
   leaveClassroom: (text, text) -> (Result);
-  login: (LoginCredentials) -> (Result_2);
+  login: (LoginCredentials) -> (Result_3);
   logout: (text) -> (Result);
   makeUserAdmin: (text, text) -> (Result);
   markSolutionAsCorrect: (text) -> (Result);
-  register: (text, text, text, text) -> (Result_1);
+  register: (text, text, text, text) -> (Result_2);
   removeUserAdmin: (text, text) -> (Result);
-  submitSolution: (Solution) -> (Result);
+  submitSolution: (SolutionInput) -> (Result_1);
   updateClassroom: (Classroom) -> (Result);
   updateProblem: (Problem) -> (Result);
   updateSolution: (Solution) -> (Result);

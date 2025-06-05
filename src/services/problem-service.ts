@@ -4,6 +4,7 @@ import {
   ProblemInputSchema,
 } from "../lib/zod-schema/problem-schema";
 import { toCandidOpt } from "@/utils/candid";
+import { Problem } from "@/declarations/backend/backend.did";
 
 export interface TempProblem {
   id: string;
@@ -15,9 +16,7 @@ export interface TempProblem {
   createdAt: Date;
 }
 
-export async function createProblem(
-  problem: ProblemInput
-): Promise<ProblemInput> {
+export async function createProblem(problem: ProblemInput): Promise<Problem> {
   try {
     console.log("Creating problem:", problem);
 
@@ -27,20 +26,18 @@ export async function createProblem(
       throw new Error("Invalid classroom data");
     }
 
-    const uuid = crypto.randomUUID();
-    await backend.createProblem({
+    const result = await backend.createProblem({
       ...problem,
-      id: uuid,
+      id: [],
       classroomId: toCandidOpt(problem.classroomId),
       imageUrl: toCandidOpt(problem.imageUrl),
-      createdAt: BigInt(Date.now()),
     });
 
-    return {
-      ...problem,
-      id: uuid,
-      createdAt: new Date(Number(Date.now())),
-    };
+    if ("err" in result) {
+      throw new Error(result.err);
+    }
+
+    return result.ok;
   } catch (error) {
     console.error("Error creating problem:", error);
     throw error;
