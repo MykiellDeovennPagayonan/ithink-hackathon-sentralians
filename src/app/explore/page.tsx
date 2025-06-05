@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Users, BookOpen, TrendingUp, Plus } from "lucide-react";
+import { Search, Users, BookOpen, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { mockProblems, categories } from "@/mockdata/problems";
 
@@ -56,16 +56,20 @@ export default function ExplorePage() {
     }
   };
 
-  const getCompletionRateColor = (rate: number) => {
-    if (rate >= 80) return "text-green-600";
-    if (rate >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
-
   const getProblemCountForCategory = (category: string) => {
     if (category === "All") return mockProblems.length;
     return mockProblems.filter((problem) => problem.category === category)
       .length;
+  };
+
+  const formatDate = (timestamp: number) => {
+    // Convert nanoseconds to milliseconds
+    const date = new Date(timestamp / 1000000);
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(date);
   };
 
   return (
@@ -207,6 +211,7 @@ export default function ExplorePage() {
                             {problem.category}
                           </Badge>
                           <Badge
+                            variant="outline"
                             className={`text-xs px-1.5 py-0.5 ${getDifficultyColor(problem.difficulty)}`}
                           >
                             {problem.difficulty}
@@ -214,27 +219,21 @@ export default function ExplorePage() {
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-1 mb-2">
-                        {problem.description}
+                        {problem.description.replace(
+                          /\$\$(.*?)\$\$/g,
+                          "[Math]"
+                        )}
                       </p>
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-500">
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          <span className="hidden xs:inline">
-                            {problem.participants.toLocaleString()}
-                          </span>
-                          <span className="xs:hidden">
-                            {(problem.participants / 1000).toFixed(1)}k
-                          </span>
+                          Created on {formatDate(problem.createdAt)}
                         </div>
-                        <div
-                          className={`flex items-center gap-1 ${getCompletionRateColor(problem.completionRate)}`}
-                        >
-                          <TrendingUp className="w-3 h-3" />
-                          {problem.completionRate}% completed
-                        </div>
-                        <div className="hidden sm:flex items-center gap-1">
-                          Created by {problem.createdBy}
-                        </div>
+                        {problem.classroomId && (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            Classroom: {problem.classroomId}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button

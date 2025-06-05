@@ -63,3 +63,10 @@ This project (ithink-hackathon) uses the following third-party assets and librar
 - **clsx** (^2.1.1) - MIT License
 - **tailwind-merge** (^3.3.0) - MIT License
 - **tailwindcss-animate** (^1.0.7) - MIT License
+
+### Sounds
+
+- **Source**: Pixabay
+- **License**: Pixabay License (Free for commercial use, no attribution required)
+- **Usage**: Sound effects in the application
+- **Attribution**: Sound Effect by [freesound_community](https://pixabay.com/users/freesound_community-46691455/) from [Pixabay](https://pixabay.com/)
