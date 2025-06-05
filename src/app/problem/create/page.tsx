@@ -30,11 +30,14 @@ import {
   ProblemFormData,
   problemFormSchema,
 } from "@/schemas/problem-form-schema";
+import { createProblem } from "@/services/problem-service";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CreateProblemPage() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   const form = useForm<ProblemFormData>({
     resolver: zodResolver(problemFormSchema),
@@ -55,16 +58,18 @@ export default function CreateProblemPage() {
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl || null,
-        classroomId: data.classroomId || null,
+        classroomId: null,
         isPublic: data.isPublic,
       };
 
       console.log("Creating problem:", problemData);
 
-      // Here you would call your API
-      // await createProblem(problemData)
+      if (user?.id && !loading) {
+        await createProblem(problemData, user?.id)
+      } else {
+        // something to say that they need to login
+      }
 
-      // Redirect to problems list or the created problem
       router.push("/explore");
     } catch (error) {
       console.error("Failed to create problem:", error);
@@ -182,26 +187,6 @@ export default function CreateProblemPage() {
                     </FormControl>
                     <FormDescription>
                       Add an optional image to accompany your problem
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="classroomId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Classroom ID (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter classroom ID to assign this problem"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Leave empty to create a standalone problem
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
