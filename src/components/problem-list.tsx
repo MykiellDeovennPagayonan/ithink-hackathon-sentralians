@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Plus, Calendar, ImageIcon } from "lucide-react";
+import { BookOpen, Calendar, ImageIcon } from "lucide-react";
 import { formatRelativeDate } from "@/lib/formatRelativeDate";
 import type { Problem } from "@/declarations/backend/backend.did";
 import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
@@ -22,7 +22,6 @@ interface ProblemListProps {
   isAdmin: boolean;
 }
 
-// Safe date formatting function
 function formatProblemDate(createdAt: bigint | string | number): string {
   try {
     console.log("Formatting date for:", { createdAt, type: typeof createdAt });
@@ -74,14 +73,6 @@ export default function ProblemList({ problems, isAdmin }: ProblemListProps) {
               : "This classroom doesn't have any problems yet."}
             {isAdmin && " Add some problems to get started."}
           </p>
-          {isAdmin && (
-            <Button asChild>
-              <Link href="/problem/create">
-                <Plus className="w-4 h-4 mr-2" />
-                {isAdmin ? "Create Your First Problem" : "Add First Problem"}
-              </Link>
-            </Button>
-          )}
         </CardContent>
       </Card>
     );
