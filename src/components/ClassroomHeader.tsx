@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Classroom } from "@/services/classroom-service";
+import { Classroom } from "@/declarations/backend/backend.did";
 import { Clock } from "lucide-react";
 
 interface ClassroomHeaderProps {
@@ -26,7 +26,7 @@ export default function ClassroomHeader({
         </div> */}
         <div className="flex items-center gap-1">
           <Clock className="w-4 h-4" />
-          Created {classroom.createdAt.toDateString()}
+          Created {classroom.createdAt.toLocaleString()}
         </div>
         <Badge variant="outline" className="text-xs flex items-center">
           Code: {code}

@@ -6,29 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Crown, Users } from "lucide-react";
 import {
+  UserWithClassroom,
   Classroom,
-  ClassroomMemberWithUserInfo,
-} from "@/services/classroom-service";
+} from "@/declarations/backend/backend.did";
 
 interface MembersListProps {
-  members: ClassroomMemberWithUserInfo[];
+  members: UserWithClassroom[];
   classroom: Classroom;
   isAdmin: boolean;
 }
 
 export default function MembersList({ members, classroom }: MembersListProps) {
-  const [admins, setAdmins] = useState<ClassroomMemberWithUserInfo[]>([]);
-  const [students, setStudents] = useState<ClassroomMemberWithUserInfo[]>([]);
+  const [admins, setAdmins] = useState<UserWithClassroom[]>([]);
+  const [students, setStudents] = useState<UserWithClassroom[]>([]);
 
   useEffect(() => {
     // In a real app, you'd have admin status in the members data
     // For now, just assume the owner is the only admin
-    const adminUsers = members.filter(
-      (member) => member.userId === classroom.ownerId
-    );
-    const studentUsers = members.filter(
-      (member) => member.userId !== classroom.ownerId
-    );
+    const adminUsers = members.filter((member) => member.isAdmin);
+    const studentUsers = members.filter((member) => !member.isAdmin);
 
     setAdmins(adminUsers);
     setStudents(studentUsers);
@@ -53,22 +49,22 @@ export default function MembersList({ members, classroom }: MembersListProps) {
             </h3>
             {admins.map((admin) => (
               <div
-                key={admin.userId}
+                key={admin.user.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-blue-50/50 hover:bg-blue-50 transition-colors"
               >
                 <Avatar className="h-10 w-10 border-2 border-blue-200 flex-shrink-0">
                   <AvatarImage
                     src="/placeholder.svg?height=40&width=40"
-                    alt={admin.username}
+                    alt={admin.user.username}
                   />
                   <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                    {getInitials(admin.username)}
+                    {getInitials(admin.user.username)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {admin.username}
+                      {admin.user.username}
                     </p>
                     <Badge
                       variant="secondary"
@@ -78,7 +74,7 @@ export default function MembersList({ members, classroom }: MembersListProps) {
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-500 truncate">
-                    {admin.email}
+                    {admin.user.email}
                   </p>
                 </div>
               </div>
@@ -97,24 +93,24 @@ export default function MembersList({ members, classroom }: MembersListProps) {
           <div className="max-h-64 overflow-y-auto">
             {students.map((student) => (
               <div
-                key={student.userId}
+                key={student.user.id}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Avatar className="h-10 w-10 flex-shrink-0">
                   <AvatarImage
                     src="/placeholder.svg?height=40&width=40"
-                    alt={student.username}
+                    alt={student.user.id}
                   />
                   <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
-                    {getInitials(student.username)}
+                    {getInitials(student.user.id)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {student.username}
+                    {student.user.username}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
-                    {student.email}
+                    {student.user.email}
                   </p>
                 </div>
               </div>

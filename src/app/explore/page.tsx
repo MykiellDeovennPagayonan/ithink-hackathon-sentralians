@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,21 +10,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Search, Users, BookOpen, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { mockProblems, categories } from "@/mockdata/problems";
+import { getPublicProblems } from "@/services/problem-service";
+import type { Problem } from "@/declarations/backend/backend.did";
+import LoadingSpinner from "@/components/loading-spinner";
+import ProblemList from "@/components/problem-list";
 
 export default function ExplorePage() {
   const [classroomCode, setClassroomCode] = useState("");
   const [problemCode, setProblemCode] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const publicProblems = await getPublicProblems();
+        console.log("Fetched public problems:", publicProblems);
+        setProblems(Array.isArray(publicProblems) ? publicProblems : []);
+      } catch (error) {
+        console.error("Error fetching public problems:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProblems();
+  }, []);
 
   const handleClassroomJoin = () => {
     if (classroomCode.trim()) {
-      router.push(`/classroom?code=${classroomCode}`);
+      router.push(`/classroom/join?code=${classroomCode}`);
     }
   };
 
@@ -34,43 +53,12 @@ export default function ExplorePage() {
     }
   };
 
-  const filteredProblems = mockProblems.filter((problem) => {
-    const matchesCategory =
-      selectedCategory === "All" || problem.category === selectedCategory;
+  const filteredProblems = problems.filter((problem) => {
     const matchesSearch =
       problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       problem.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesSearch && problem.isPublic;
   });
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy":
-        return "bg-green-100 text-green-800";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "Hard":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getProblemCountForCategory = (category: string) => {
-    if (category === "All") return mockProblems.length;
-    return mockProblems.filter((problem) => problem.category === category)
-      .length;
-  };
-
-  const formatDate = (timestamp: number) => {
-    // Convert nanoseconds to milliseconds
-    const date = new Date(timestamp / 1000000);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  };
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50">
@@ -141,113 +129,65 @@ export default function ExplorePage() {
           </Card>
         </div>
 
-        {/* Categories and Search */}
+        {/* Search */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:gap-4 lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={
-                    selectedCategory === category ? "default" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="rounded-full text-xs sm:text-sm h-8 sm:h-9"
-                >
-                  {category} ({getProblemCountForCategory(category)})
-                </Button>
-              ))}
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+            <div className="relative flex-1 sm:max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search problems..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10"
+              />
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1 sm:flex-none">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search problems..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full sm:w-80 h-10"
-                />
-              </div>
-              <Button className="h-10 whitespace-nowrap">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Problem
-              </Button>
-            </div>
+            <Button
+              className="h-10 whitespace-nowrap"
+              onClick={() => router.push("/problem/create")}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Problem
+            </Button>
           </div>
+        </div>
+
+        {/* Problems List Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+            Publicly Available Problems
+          </h2>
+          <span className="text-sm text-gray-500">
+            {filteredProblems.length} problem
+            {filteredProblems.length !== 1 ? "s" : ""} found
+          </span>
         </div>
 
         {/* Problems List */}
-        <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-              Publicly Available Problems
-            </h2>
-            <span className="text-sm text-gray-500">
-              {filteredProblems.length} problem
-              {filteredProblems.length !== 1 ? "s" : ""} found
-            </span>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner />
           </div>
-
-          <div className="grid gap-2">
-            {filteredProblems.map((problem) => (
-              <Card
-                key={problem.id}
-                className="hover:shadow-sm transition-shadow cursor-pointer"
-                onClick={() => router.push(`/problem?id=${problem.id}`)}
-              >
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="text-sm sm:text-base font-medium text-gray-900 truncate">
-                          {problem.title}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge
-                            variant="secondary"
-                            className="text-xs px-1.5 py-0.5"
-                          >
-                            {problem.category}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs px-1.5 py-0.5 ${getDifficultyColor(problem.difficulty)}`}
-                          >
-                            {problem.difficulty}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-1 mb-2">
-                        {problem.description.replace(
-                          /\$\$(.*?)\$\$/g,
-                          "[Math]"
-                        )}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          Created on {formatDate(problem.createdAt)}
-                        </div>
-                        {problem.classroomId && (
-                          <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            Classroom: {problem.classroomId}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0"
-                    >
-                      Solve
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        ) : filteredProblems.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium mb-2">
+                No public problems found
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm
+                  ? `No problems match your search for "${searchTerm}"`
+                  : "No public problems are available yet."}
+              </p>
+              <Button onClick={() => router.push("/problem/create")}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create the First Public Problem
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <ProblemList problems={filteredProblems} isAdmin={false} />
+        )}
       </div>
     </div>
   );

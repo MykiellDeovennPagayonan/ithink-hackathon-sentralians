@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
-import { createClassroom } from "@/services/classroom-service";
+import { createClassroom, joinClassroom } from "@/services/classroom-service";
 import { toast } from "sonner";
 
 export default function CreateClassroomDialog({ userId }: { userId: string }) {
@@ -36,6 +36,7 @@ export default function CreateClassroomDialog({ userId }: { userId: string }) {
     try {
       setIsLoading(true);
       const classroomId = await createClassroom(name, description, userId);
+      await joinClassroom(userId, classroomId);
 
       toast.success(`Classroom "${name}" created successfully!`);
       setName("");

@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import MembersList from "./members-list";
 import {
+  UserWithClassroom,
   Classroom,
-  ClassroomMemberWithUserInfo,
-} from "@/services/classroom-service";
+} from "@/declarations/backend/backend.did";
 
 interface MembersCardProps {
-  members: ClassroomMemberWithUserInfo[];
+  members: UserWithClassroom[];
   classroom: Classroom;
   isAdmin: boolean;
 }

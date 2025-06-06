@@ -1,11 +1,13 @@
 import Solutions "../models/solutions";
 import Types "../types";
+import IdGen "../utils/idGen";
 import Result "mo:base/Result";
 import Array "mo:base/Array";
+import Time "mo:base/Time";
 
 module SolutionService {
   public func init(store : Solutions.Use) : {
-    create                     : (Types.Solution) -> async Result.Result<(), Text>;
+    create                     : (Types.SolutionInput) -> async Result.Result<Types.Solution, Text>;
     getById                    : (Text) -> async ?Types.Solution;
     getByProblem               : (Text) -> async [Types.Solution];
     getByUser                  : (Text) -> async [Types.Solution];
@@ -15,8 +17,8 @@ module SolutionService {
     delete                     : (Text) -> async Result.Result<(), Text>;
   } {
     return {
-      create = func(solution : Types.Solution) : async Result.Result<(), Text> {
-        await createImpl(solution, store);
+      create = func(solutionInput : Types.SolutionInput) : async Result.Result<Types.Solution, Text> {
+        await createImpl(solutionInput, store);
       };
       getById = func(id : Text) : async ?Types.Solution {
         store.pk.get(id);
@@ -50,15 +52,34 @@ module SolutionService {
     };
   };
 
-  private func createImpl(solution : Types.Solution, store : Solutions.Use) : async Result.Result<(), Text> {
-    let existing = store.pk.get(solution.id);
-    switch (existing) {
-      case (?_) { #err("Solution ID already exists") };
+  private func createImpl(solutionInput : Types.SolutionInput, store : Solutions.Use) : async Result.Result<Types.Solution, Text> {
+    // Generate or use provided ID
+    let solutionId = switch (solutionInput.id) {
+      case (?providedId) {
+        // Check if provided ID already exists
+        switch (store.pk.get(providedId)) {
+          case (?_) { return #err("Solution ID already exists") };
+          case null providedId;
+        };
+      };
       case null {
-        store.db.insert(solution);
-        #ok
+        await IdGen.generateSolutionId(store);
       };
     };
+
+    // Create full solution object with generated fields
+    let solution : Types.Solution = {
+      id = solutionId;
+      problemId = solutionInput.problemId;
+      userId = solutionInput.userId;
+      imageUrl = solutionInput.imageUrl;
+      isCorrect = solutionInput.isCorrect;
+      notes = solutionInput.notes;
+      submittedAt = Time.now();
+    };
+
+    store.db.insert(solution);
+    #ok(solution);
   };
 
   private func markAsCorrectImpl(id : Text, store : Solutions.Use) : async Result.Result<(), Text> {
