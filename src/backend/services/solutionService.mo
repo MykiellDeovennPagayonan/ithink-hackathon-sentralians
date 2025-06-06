@@ -9,8 +9,8 @@ module SolutionService {
   public func init(store : Solutions.Use) : {
     create                     : (Types.SolutionInput) -> async Result.Result<Types.Solution, Text>;
     getById                    : (Text) -> async ?Types.Solution;
-    getByProblem               : (Text) -> async [Types.Solution];
-    getByUser                  : (Text) -> async [Types.Solution];
+    getSolutionsByProblem : (Text) -> async [Types.Solution];
+    getSolutionsByUser    : (Text) -> async [Types.Solution];
     getCorrectSolutionsByProblem : (Text) -> async [Types.Solution];
     markAsCorrect              : (Text) -> async Result.Result<(), Text>;
     update                     : (Types.Solution) -> async Result.Result<(), Text>;
@@ -23,11 +23,15 @@ module SolutionService {
       getById = func(id : Text) : async ?Types.Solution {
         store.pk.get(id);
       };
-      getByProblem = func(problemId : Text) : async [Types.Solution] {
-        store.problem.find(problemId, problemId, #fwd, 100);
+      getSolutionsByProblem = func(problemId : Text) : async [Types.Solution] {
+        let startKey = problemId # "_";
+        let endKey = problemId # "_~";
+        store.problem.find(startKey, endKey, #fwd, 100);
       };
-      getByUser = func(userId : Text) : async [Types.Solution] {
-        store.user.find(userId, userId, #fwd, 100);
+      getSolutionsByUser = func(userId : Text) : async [Types.Solution] {
+        let startKey = userId # "_";
+        let endKey = userId # "_~";
+        store.user.find(startKey, endKey, #fwd, 100);
       };
       getCorrectSolutionsByProblem = func(problemId : Text) : async [Types.Solution] {
         let allForProblem = store.problem.find(problemId, problemId, #fwd, 100);
@@ -53,10 +57,8 @@ module SolutionService {
   };
 
   private func createImpl(solutionInput : Types.SolutionInput, store : Solutions.Use) : async Result.Result<Types.Solution, Text> {
-    // Generate or use provided ID
     let solutionId = switch (solutionInput.id) {
       case (?providedId) {
-        // Check if provided ID already exists
         switch (store.pk.get(providedId)) {
           case (?_) { return #err("Solution ID already exists") };
           case null providedId;
@@ -67,7 +69,6 @@ module SolutionService {
       };
     };
 
-    // Create full solution object with generated fields
     let solution : Types.Solution = {
       id = solutionId;
       problemId = solutionInput.problemId;
