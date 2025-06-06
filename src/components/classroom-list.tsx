@@ -90,7 +90,7 @@ export default function ClassroomList({
           </CardContent>
           <CardFooter>
             <Button className="w-full" asChild>
-              <Link href={`/classroom/join?code=${classroom.id}`}>
+              <Link href={`/classroom?code=${classroom.id}`}>
                 Enter Classroom
               </Link>
             </Button>
