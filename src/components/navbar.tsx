@@ -24,15 +24,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Menu,
-  User,
-  LogOut,
-  Settings,
-  Users,
-  Search,
-  Brain,
-} from "lucide-react";
+import { Menu, User, LogOut, Users, Search, Brain } from "lucide-react";
 
 const navigationItems = [
   {
@@ -69,6 +61,7 @@ export default function Navbar() {
   const handleSignOut = () => {
     console.log("Sign out clicked");
     logout();
+    window.location.href = "/";
   };
 
   return (
@@ -134,9 +127,6 @@ export default function Navbar() {
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -151,15 +141,6 @@ export default function Navbar() {
                       </p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -271,22 +252,6 @@ export default function Navbar() {
                         </div>
                         <Button
                           variant="ghost"
-                          className="justify-start px-3 py-3 h-auto"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <User className="mr-3 h-5 w-5" />
-                          Profile
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="justify-start px-3 py-3 h-auto"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <Settings className="mr-3 h-5 w-5" />
-                          Settings
-                        </Button>
-                        <Button
-                          variant="ghost"
                           className="justify-start px-3 py-3 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => {
                             handleSignOut();
@@ -312,7 +277,7 @@ export default function Navbar() {
                           asChild
                           onClick={() => setIsOpen(false)}
                         >
-                          <Link href="/signup">Sign up</Link>
+                          <Link href="/register">Sign up</Link>
                         </Button>
                       </div>
                     )}

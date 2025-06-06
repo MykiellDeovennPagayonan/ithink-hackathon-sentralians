@@ -25,23 +25,22 @@ export default function CreatedProblemsPageClient() {
 
   useEffect(() => {
     const fetchProblems = async () => {
-      if (!user) return;
       try {
-        const fetchedProblems = await getProblemsByUserId(user.id);
-        console.log("Fetched problems:", fetchedProblems);
+        if (user) {
+          const fetchedProblems = await getProblemsByUserId(user.id);
+          console.log("Fetched problems:", fetchedProblems);
 
-        // Handle both single object and array responses
-        let problemsArray: Problem[] = [];
+          let problemsArray: Problem[] = [];
 
-        if (Array.isArray(fetchedProblems)) {
-          problemsArray = fetchedProblems;
-        } else if (fetchedProblems && typeof fetchedProblems === "object") {
-          // If it's a single object, wrap it in an array
-          problemsArray = [fetchedProblems as Problem];
+          if (Array.isArray(fetchedProblems)) {
+            problemsArray = fetchedProblems;
+          } else if (fetchedProblems && typeof fetchedProblems === "object") {
+            problemsArray = [fetchedProblems as Problem];
+          }
+
+          console.log("Processed problems array:", problemsArray);
+          setProblems(problemsArray);
         }
-
-        console.log("Processed problems array:", problemsArray);
-        setProblems(problemsArray);
       } catch (error) {
         console.error("Error fetching problems:", error);
         setProblems([]);
@@ -50,10 +49,16 @@ export default function CreatedProblemsPageClient() {
       }
     };
 
-    if (user) {
-      fetchProblems();
+    // Only proceed when auth loading is complete
+    if (!authLoading) {
+      if (user) {
+        fetchProblems();
+      } else {
+        // If no user and auth is done loading, set loading to false
+        setLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]); // Add authLoading as a dependency
 
   if (id) {
     return (
