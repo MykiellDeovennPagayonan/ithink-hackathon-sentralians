@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/navbar";
+import ConditionalNavbar from "@/components/ConditionalNavbar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -27,8 +27,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AuthProvider>
-          <Navbar />
+          <ConditionalNavbar />
+
           {children}
+
           <Toaster />
         </AuthProvider>
       </body>

@@ -46,6 +46,7 @@ export default function SubmissionArea({
         console.log("Uploaded file URL:", url);
         setUploadedImageUrl(url);
         onUploadComplete(url);
+        onSubmit(url)
       }
       setFiles([]);
     },

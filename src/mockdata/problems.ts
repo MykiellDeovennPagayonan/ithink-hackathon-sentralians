@@ -15,7 +15,7 @@ export const mockProblems = [
     id: "1",
     title: "Test",
     description:
-      "Hello\nWorld! Next is a space$$\\frac13a=\\frac17c$$Solve this and show your final answer.",
+      "Engineers from Sonza Industrial Plant have determined that a small amount of a newly available chemical additive will increase the water repellency of Sonza's tent fabric by 20%. The plant supervisor has arranged to purchased the additive through a 5-year contract at $7000 per year, starting 1 year from now. He expects the annual price to increase by 12% per year starting in the sixth year and thereafter through year 13. Additionally, an initial investment of $35,000 was made now to prepare a site suitable for the contractor to deliver the additive. Use i = 15% per year to determine the equivalent total present worth for all these cash flows.",
     imageUrl: null,
     classroomId: null,
     isPublic: true,
