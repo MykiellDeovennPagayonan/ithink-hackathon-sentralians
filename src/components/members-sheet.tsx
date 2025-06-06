@@ -11,9 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import MembersList from "./members-list";
 import {
+  UserWithClassroom,
   Classroom,
-} from "@/services/classroom-service";
-import { UserWithClassroom } from "@/declarations/backend/backend.did";
+} from "@/declarations/backend/backend.did";
 
 interface MembersSheetProps {
   members: UserWithClassroom[];

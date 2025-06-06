@@ -1,54 +1,64 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Users, LogIn, UserPlus } from "lucide-react";
+import { Code, LogIn, UserPlus, Plus } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import ClassroomList from "@/components/classroom-list";
-import ClassroomSearch from "@/components/classroom-search";
-import { getClassroomsByOwner } from "@/services/classroom-service";
+import ProblemList from "@/components/problem-list";
+import ProblemSearch from "@/components/problem-search";
+import { getProblemsByUserId } from "@/services/problem-service";
 import { useGetCurrentUser } from "@/services/auth-service";
 import LoadingSpinner from "@/components/loading-spinner";
-import ClassroomDetail from "@/components/classroom-detail";
-import ClassroomActions from "@/components/classroom-actions";
-import { Classroom } from "@/declarations/backend/backend.did";
+import ProblemDetail from "@/components/problem-detail";
+import type { Problem } from "@/declarations/backend/backend.did";
 
-export default function ClassroomPageClient() {
+export default function CreatedProblemsPageClient() {
   const searchParams = useSearchParams();
-  const code = searchParams.get("code") || "";
+  const id = searchParams.get("id") || "";
   const searchTerm = searchParams.get("search") || "";
-
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const [problems, setProblems] = useState<Problem[]>([]);
   const { user, loading: authLoading } = useGetCurrentUser();
 
   useEffect(() => {
-    const fetchClassrooms = async () => {
+    const fetchProblems = async () => {
       if (!user) return;
-
       try {
-        const fetchedClassrooms = await getClassroomsByOwner(user.id);
-        setClassrooms(fetchedClassrooms);
-      } catch (err) {
-        console.error("Failed to fetch classrooms:", err);
-        setError("Failed to load classrooms. Please try again later.");
+        const fetchedProblems = await getProblemsByUserId(user.id);
+        console.log("Fetched problems:", fetchedProblems);
+
+        // Handle both single object and array responses
+        let problemsArray: Problem[] = [];
+
+        if (Array.isArray(fetchedProblems)) {
+          problemsArray = fetchedProblems;
+        } else if (fetchedProblems && typeof fetchedProblems === "object") {
+          // If it's a single object, wrap it in an array
+          problemsArray = [fetchedProblems as Problem];
+        }
+
+        console.log("Processed problems array:", problemsArray);
+        setProblems(problemsArray);
+      } catch (error) {
+        console.error("Error fetching problems:", error);
+        setProblems([]);
       } finally {
         setLoading(false);
       }
     };
 
     if (user) {
-      fetchClassrooms();
+      fetchProblems();
     }
   }, [user]);
 
-  if (code) {
+  if (id) {
     return (
       <Suspense fallback={<LoadingSpinner />}>
-        <ClassroomDetail code={code} />
+        <ProblemDetail id={id} />
       </Suspense>
     );
   }
@@ -57,16 +67,6 @@ export default function ClassroomPageClient() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
         <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center text-center px-4">
-        <h2 className="text-2xl font-semibold text-red-600 mb-2">Oops!</h2>
-        <p className="text-gray-700 mb-4">{error}</p>
-        <Button onClick={() => location.reload()}>Try Again</Button>
       </div>
     );
   }
@@ -82,25 +82,35 @@ export default function ClassroomPageClient() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              My Classrooms
+              Created Problems
             </h1>
             <p className="text-gray-600 mt-1">
-              Manage your classes and assignments
+              Manage and track the coding problems you&apos;ve created
             </p>
           </div>
-          <ClassroomActions userId={user.id} />
+          <Button asChild>
+            <Link href="/problem/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Problem
+            </Link>
+          </Button>
         </div>
 
         {/* Search */}
-        <ClassroomSearch initialSearchTerm={searchTerm} />
+        <ProblemSearch initialSearchTerm={searchTerm} />
 
-        {/* Classrooms Grid */}
+        {/* Debug Info */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+            <p className="text-sm text-yellow-800">
+              Debug: Found {problems.length} problem(s)
+            </p>
+          </div>
+        )}
+
+        {/* Problems List */}
         <Suspense fallback={<LoadingSpinner />}>
-          <ClassroomList
-            classrooms={classrooms}
-            searchTerm={searchTerm}
-            userId={user.id}
-          />
+          <ProblemList problems={problems} isAdmin={true} />
         </Suspense>
       </div>
     </div>
@@ -114,15 +124,16 @@ function NotLoggedInView() {
         <div className="max-w-2xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-              <Users className="h-8 w-8" />
+              <Code className="h-8 w-8" />
             </div>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Access Your Classrooms
+            Access Your Created Problems
           </h1>
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            You need to be logged in to view and manage your classrooms. Join
-            classes, track assignments, and collaborate with your peers.
+            You need to be logged in to view and manage the coding problems
+            you&apos;ve created. Create, edit, and track the performance of your
+            problems.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="h-12 px-8" asChild>
@@ -140,9 +151,8 @@ function NotLoggedInView() {
           </div>
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-700">
-              <strong>New to AI Teach?</strong> Create an account to join
-              classrooms, access assignments, and get personalized AI feedback
-              on your solutions.
+              <strong>New to AI Teach?</strong> Create an account to start
+              creating and managing coding problems.
             </p>
           </div>
         </div>

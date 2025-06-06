@@ -47,6 +47,12 @@ const navigationItems = [
     icon: Users,
     requiresAuth: false,
   },
+  {
+    name: "Created Problems",
+    href: "/created-problems",
+    icon: Brain,
+    requiresAuth: false,
+  },
 ];
 
 export default function Navbar() {

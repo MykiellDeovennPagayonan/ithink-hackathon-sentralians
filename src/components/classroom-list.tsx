@@ -15,7 +15,8 @@ import { BookOpen, Calendar, Users } from "lucide-react";
 import { formatRelativeDate } from "@/lib/formatRelativeDate";
 import CreateClassroomDialog from "./create-classroom-dialog";
 import JoinClassroomDialog from "./join-classroom-dialog";
-import { Classroom } from "@/services/classroom-service";
+import { Classroom } from "@/declarations/backend/backend.did";
+import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
 interface ClassroomListProps {
   classrooms: Classroom[];
@@ -83,12 +84,13 @@ export default function ClassroomList({
           <CardContent className="space-y-4">
             <div className="flex items-center text-sm text-gray-600">
               <Calendar className="mr-2 h-4 w-4" />
-              Created {formatRelativeDate(classroom.createdAt)}
+              Created{" "}
+              {formatRelativeDate(convertBigIntToDate(classroom.createdAt))}
             </div>
           </CardContent>
           <CardFooter>
             <Button className="w-full" asChild>
-              <Link href={`/classroom?code=${classroom.id}`}>
+              <Link href={`/classroom/join?code=${classroom.id}`}>
                 Enter Classroom
               </Link>
             </Button>
