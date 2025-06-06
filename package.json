@@ -30,6 +30,7 @@
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.16.0",
     "katex": "^0.16.22",
     "lucide-react": "^0.511.0",
     "mathlive": "^0.105.3",

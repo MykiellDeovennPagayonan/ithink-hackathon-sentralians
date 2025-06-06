@@ -45,13 +45,7 @@ const navigationItems = [
     name: "Classroom",
     href: "/classroom",
     icon: Users,
-    requiresAuth: false,
-  },
-  {
-    name: "Created Problems",
-    href: "/created-problems",
-    icon: Brain,
-    requiresAuth: false,
+    requiresAuth: true,
   },
 ];
 
@@ -83,11 +77,11 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <Brain className="h-5 w-5" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white">
+                <Brain className="h-4 w-4" />
               </div>
-              <span className="hidden font-bold text-xl sm:inline-block">
-                AI Teach
+              <span className="hidden font-bold text-xl sm:inline-block font-montserrat">
+                Numerus
               </span>
             </Link>
           </div>
