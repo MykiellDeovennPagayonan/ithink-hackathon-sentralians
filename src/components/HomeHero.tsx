@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import FloatingMath from "@/components/ui/floating-numbers";
+import FloatingMath from "@/components/floating-numbers";
 
 export default function HomeHero() {
   return (

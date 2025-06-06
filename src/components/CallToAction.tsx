@@ -15,13 +15,13 @@ export default function CallToActionSection() {
 
   return (
     <section className="relative overflow-hidden container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-black">
-      {/* Background elements matching your style */}
+
       <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-green-500 to-transparent rounded-full opacity-30 blur-3xl animate-pulse" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tr from-green-400 to-transparent rounded-full opacity-20 blur-2xl animate-pulse animation-delay-2000" />
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-green-500 to-transparent rounded-full opacity-10 blur-3xl animate-[pulse_10s_ease-in-out_infinite]" />
 
       <div className="relative z-10">
-        {/* Stats Section */}
+
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 drop-shadow-md">
             Join the Future of Math Learning
@@ -51,11 +51,11 @@ export default function CallToActionSection() {
           </div> */}
         </div>
 
-        {/* Main CTA Card */}
+
         <Card className="border-0 shadow-xl px-8 bg-gradient-to-r from-gray-900 to-gray-800 backdrop-blur-sm">
           <CardContent className="py-12 sm:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              {/* Left side - Benefits */}
+
               <div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6 drop-shadow-md">
                   Everything You Need to Excel in Mathematics
@@ -70,7 +70,7 @@ export default function CallToActionSection() {
                 </div>
               </div>
 
-              {/* Right side - CTA */}
+
               <div className="text-center lg:text-left">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 shadow-2xl">
                   <h4 className="text-xl sm:text-2xl font-bold text-white mb-4">
