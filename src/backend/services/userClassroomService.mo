@@ -8,8 +8,8 @@ module UserClassroomService {
   public func init(store : UserClassrooms.Use) : {
     joinClassroom        : (Types.UserClassroomInput) -> async Result.Result<Types.UserClassroom, Text>;
     leaveClassroom       : (Text, Text) -> async Result.Result<(), Text>;
-    getUserClassrooms    : (Text) -> async [Types.UserClassroom];
-    getClassroomMembers  : (Text) -> async [Types.UserClassroom];
+    getUserClassroomsByUser    : (Text) -> async [Types.UserClassroom];
+    getUserClassroomsByClassroom : (Text) -> async [Types.UserClassroom];
     getClassroomAdmins   : (Text) -> async [Types.UserClassroom];
     makeAdmin            : (Text, Text) -> async Result.Result<(), Text>;
     removeAdmin          : (Text, Text) -> async Result.Result<(), Text>;
@@ -33,12 +33,16 @@ module UserClassroomService {
         };
       };
 
-      getUserClassrooms = func(userId : Text) : async [Types.UserClassroom] {
-        store.user.find(userId, userId, #fwd, 100)
+      getUserClassroomsByUser = func(userId : Text) : async [Types.UserClassroom] {
+        let startKey = userId # "_";
+        let endKey = userId # "_~";
+        store.user.find(startKey, endKey, #fwd, 100);
       };
 
-      getClassroomMembers = func(classroomId : Text) : async [Types.UserClassroom] {
-        store.classroom.find(classroomId, classroomId, #fwd, 100)
+      getUserClassroomsByClassroom = func(classroomId : Text) : async [Types.UserClassroom] {
+        let startKey = classroomId # "_";
+        let endKey = classroomId # "_~";
+        store.classroom.find(startKey, endKey, #fwd, 100);
       };
 
       getClassroomAdmins = func(classroomId : Text) : async [Types.UserClassroom] {

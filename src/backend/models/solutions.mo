@@ -1,4 +1,5 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat"; // Make sure Nat is imported
 import RXMDB "mo:rxmodb";
 import PK "mo:rxmodb/primarykey";
 import IDX "mo:rxmodb/index";
@@ -27,9 +28,9 @@ module Solutions {
 
   public func pk_key(h : Types.Solution) : SolutionPK = h.id;
 
-  public func problem_key(_idx:Nat, h : Types.Solution) : ?SolutionProblemKey = ?h.problemId;
+  public func problem_key(idx:Nat, h : Types.Solution) : ?SolutionProblemKey = ?(h.problemId # "_" # Nat.toText(idx));
 
-  public func user_key(_idx:Nat, h : Types.Solution) : ?SolutionUserKey = ?h.userId;
+  public func user_key(idx:Nat, h : Types.Solution) : ?SolutionUserKey = ?(h.userId # "_" # Nat.toText(idx));
 
   public type Use = {
     db      : RXMDB.Use<Types.Solution>;
@@ -55,7 +56,7 @@ module Solutions {
       obs;
       store     = init.problem;
       compare   = Text.compare;
-      key       = problem_key;
+      key       = problem_key; // Uses the modified key function
       regenerate= #no;
       keep      = #all;
     };
@@ -66,7 +67,7 @@ module Solutions {
       obs;
       store     = init.user;
       compare   = Text.compare;
-      key       = user_key;
+      key       = user_key; // Uses the modified key function
       regenerate= #no;
       keep      = #all;
     };

@@ -38,9 +38,11 @@ module EnhancedService {
   } {
     return {
       getClassroomMembersWithDetails = func(classroomId: Text): async [UserWithClassroom] {
-        let memberships = userClassroomStore.classroom.find(classroomId, classroomId, #fwd, 100);
+        let startKey = classroomId # "_";
+        let endKey = classroomId # "_~";
+        let memberships = userClassroomStore.classroom.find(startKey, endKey, #fwd, 100);
         let buffer = Buffer.Buffer<UserWithClassroom>(memberships.size());
-        
+
         for (membership in memberships.vals()) {
           switch (userStore.pk.get(membership.userId)) {
             case (?user) {
@@ -53,14 +55,16 @@ module EnhancedService {
             case null { /* do nothing */ };
           };
         };
-        
+
         Buffer.toArray(buffer);
       };
 
       getClassroomAdminsWithDetails = func(classroomId: Text): async [UserWithClassroom] {
-        let memberships = userClassroomStore.classroom.find(classroomId, classroomId, #fwd, 100);
+        let startKey = classroomId # "_";
+        let endKey = classroomId # "_~";
+        let memberships = userClassroomStore.classroom.find(startKey, endKey, #fwd, 100);
         let buffer = Buffer.Buffer<UserWithClassroom>(memberships.size());
-        
+
         for (membership in memberships.vals()) {
           if (membership.isAdmin) {
             switch (userStore.pk.get(membership.userId)) {
@@ -75,14 +79,16 @@ module EnhancedService {
             };
           };
         };
-        
+
         Buffer.toArray(buffer);
       };
 
       getUserClassroomsWithDetails = func(userId: Text): async [ClassroomWithMembership] {
-        let memberships = userClassroomStore.user.find(userId, userId, #fwd, 100);
+        let startKey = userId # "_";
+        let endKey = userId # "_~";
+        let memberships = userClassroomStore.user.find(startKey, endKey, #fwd, 100);
         let buffer = Buffer.Buffer<ClassroomWithMembership>(memberships.size());
-        
+
         for (membership in memberships.vals()) {
           switch (classroomStore.pk.get(membership.classroomId)) {
             case (?classroom) {
@@ -95,14 +101,17 @@ module EnhancedService {
             case null { /* do nothing */ };
           };
         };
-        
+
         Buffer.toArray(buffer);
       };
 
       getAllUserProblems = func(userId: Text): async [ProblemWithClassroom] {
         let buffer = Buffer.Buffer<ProblemWithClassroom>(50);
-        
-        let userProblems = problemStore.creator.find(userId, userId, #fwd, 100);
+
+        let userProblemsStartKey = userId # "_";
+        let userProblemsEndKey = userId # "_~";
+        let userProblems = problemStore.creator.find(userProblemsStartKey, userProblemsEndKey, #fwd, 100);
+
         for (problem in userProblems.vals()) {
           let classroomName = switch (problem.classroomId) {
             case (?classId) {
@@ -113,16 +122,22 @@ module EnhancedService {
             };
             case null { null };
           };
-          
+
           buffer.add({
             problem = problem;
             classroomName = classroomName;
           });
         };
-        
-        let userClassrooms = userClassroomStore.user.find(userId, userId, #fwd, 100);
+
+        let userClassroomsStartKey = userId # "_";
+        let userClassroomsEndKey = userId # "_~";
+        let userClassrooms = userClassroomStore.user.find(userClassroomsStartKey, userClassroomsEndKey, #fwd, 100);
+
         for (membership in userClassrooms.vals()) {
-          let classroomProblems = problemStore.classroom.find(membership.classroomId, membership.classroomId, #fwd, 100);
+          let classroomProblemsStartKey = membership.classroomId # "_";
+          let classroomProblemsEndKey = membership.classroomId # "_~";
+          let classroomProblems = problemStore.classroom.find(classroomProblemsStartKey, classroomProblemsEndKey, #fwd, 100);
+
           switch (classroomStore.pk.get(membership.classroomId)) {
             case (?classroom) {
               for (problem in classroomProblems.vals()) {
@@ -137,12 +152,14 @@ module EnhancedService {
             case null { /* do nothing */ };
           };
         };
-        
+
         Buffer.toArray(buffer);
       };
 
       getProblemsByUserId = func(userId: Text): async [Types.Problem] {
-        problemStore.creator.find(userId, userId, #fwd, 100);
+        let startKey = userId # "_";
+        let endKey = userId # "_~";
+        problemStore.creator.find(startKey, endKey, #fwd, 100);
       };
     };
   };
