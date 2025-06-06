@@ -1,11 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProblemDescriptionRenderer from "../problem-description-renderer";
-import { Problem } from "@/declarations/backend/backend.did";
 import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
+interface ProblemInput {
+  title: string,
+  createdAt?: bigint,
+  description: string,
+  imageUrl?: string
+}
+
 interface ProblemDisplayProps {
-  problem: Problem;
+  problem: ProblemInput;
   className?: string;
 }
 
@@ -29,9 +35,11 @@ export default function ProblemDisplay({
             <CardTitle className="text-xl sm:text-2xl lg:text-3xl mb-2 leading-tight">
               {problem.title}
             </CardTitle>
-            <p className="text-gray-600 text-xs sm:text-sm">
-              Created on {formatDate(convertBigIntToDate(problem.createdAt))}
-            </p>
+            {problem.createdAt && (
+              <p className="text-gray-600 text-xs sm:text-sm">
+                Created on {formatDate(convertBigIntToDate(problem.createdAt))}
+              </p>
+            )}
           </div>
         </div>
       </CardHeader>

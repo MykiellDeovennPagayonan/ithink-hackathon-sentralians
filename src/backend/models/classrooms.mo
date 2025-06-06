@@ -1,4 +1,5 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat"; // Make sure Nat is imported
 import RXMDB "mo:rxmodb";
 import PK "mo:rxmodb/primarykey";
 import IDX "mo:rxmodb/index";
@@ -24,7 +25,7 @@ module Classrooms {
 
   public func pk_key(h : Types.Classroom) : ClassroomPK = h.id;
 
-  public func owner_key(_idx:Nat, h : Types.Classroom) : ?ClassroomOwnerKey = ?h.ownerId;
+  public func owner_key(idx:Nat, h : Types.Classroom) : ?ClassroomOwnerKey = ?(h.ownerId # "_" # Nat.toText(idx));
 
   public type Use = {
     db    : RXMDB.Use<Types.Classroom>;

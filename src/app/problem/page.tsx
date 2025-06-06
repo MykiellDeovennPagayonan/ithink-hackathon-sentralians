@@ -19,6 +19,17 @@ interface ProblemWithClassroomData extends Problem {
   classroom?: Classroom;
 }
 
+const adaptProblemForDisplay = (problem: Problem) => {
+  const imageUrlInitial = problem.imageUrl.length > 0 ? problem.imageUrl[0] : undefined
+  return (
+    {
+      title: problem.title,
+      description: problem.description,
+      createdAt: problem.createdAt,
+      imageUrl: imageUrlInitial
+    }
+  )
+}
 export default function ProblemPage() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -196,7 +207,7 @@ export default function ProblemPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
           {/* Left Side - Problem Display */}
           <div className="flex flex-col order-1 lg:order-1">
-            <ProblemDisplay problem={problem} />
+            <ProblemDisplay problem={adaptProblemForDisplay(problem)} />
           </div>
 
           {/* Right Side - Submission Area */}

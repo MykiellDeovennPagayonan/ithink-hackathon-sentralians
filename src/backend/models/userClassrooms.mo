@@ -1,11 +1,12 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat";
 import RXMDB "mo:rxmodb";
 import PK "mo:rxmodb/primarykey";
 import IDX "mo:rxmodb/index";
 import Types "../types";
 
 module UserClassrooms {
-  public type UserClassroomPK = Text; // composite key: userId#classroomId
+  public type UserClassroomPK = Text;
   public type UserKey = Text;
   public type ClassroomKey = Text;
 
@@ -27,9 +28,9 @@ module UserClassrooms {
 
   public func pk_key(h : Types.UserClassroom) : UserClassroomPK = h.userId # "#" # h.classroomId;
 
-  public func user_key(_idx:Nat, h : Types.UserClassroom) : ?UserKey = ?h.userId;
+  public func user_key(idx:Nat, h : Types.UserClassroom) : ?UserKey = ?(h.userId # "_" # Nat.toText(idx));
 
-  public func classroom_key(_idx:Nat, h : Types.UserClassroom) : ?ClassroomKey = ?h.classroomId;
+  public func classroom_key(idx:Nat, h : Types.UserClassroom) : ?ClassroomKey = ?(h.classroomId # "_" # Nat.toText(idx));
 
   public type Use = {
     db        : RXMDB.Use<Types.UserClassroom>;

@@ -1,4 +1,5 @@
 import Text "mo:base/Text";
+import Nat "mo:base/Nat";
 import RXMDB "mo:rxmodb";
 import PK "mo:rxmodb/primarykey";
 import IDX "mo:rxmodb/index";
@@ -30,9 +31,11 @@ module Problems {
 
   public func pk_key(h : Types.Problem) : ProblemPK = h.id;
 
-  public func classroom_key(_idx:Nat, h : Types.Problem) : ?ProblemClassroomKey {
+  public func classroom_key(idx:Nat, h : Types.Problem) : ?ProblemClassroomKey {  
     switch (h.classroomId) {
-      case (?id) { ?id };
+      case (?id) {
+        ? (id # "_" # Nat.toText(idx))
+      };
       case null { null };
     };
   };
@@ -45,7 +48,9 @@ module Problems {
     }
   };
 
-  public func creator_key(_idx:Nat, h : Types.Problem) : ?ProblemCreatorKey = ?h.creatorId;
+  public func creator_key(idx:Nat, h : Types.Problem) : ?ProblemCreatorKey {
+    ? (h.creatorId # "_" # Nat.toText(idx))
+  };
 
   public type Use = {
     db        : RXMDB.Use<Types.Problem>;
