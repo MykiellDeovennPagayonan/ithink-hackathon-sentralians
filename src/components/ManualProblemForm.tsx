@@ -25,6 +25,7 @@ import {
 } from "@/schemas/problem-form-schema";
 import { createProblem } from "@/services/problem-service";
 import { useAuth } from "@/contexts/AuthContext";
+import UploadImage from "./UploadImage";
 // import { toast } from "@/components/ui/use-toast";
 
 export default function ManualProblemForm() {
@@ -42,8 +43,8 @@ export default function ManualProblemForm() {
       title: "",
       description: "",
       imageUrl: "",
-      classroomId: classroomIdFromQuery || "", 
-      isPublic: !classroomIdFromQuery, 
+      classroomId: classroomIdFromQuery || "",
+      isPublic: !classroomIdFromQuery,
     },
   });
 
@@ -199,16 +200,22 @@ export default function ManualProblemForm() {
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL (Optional)</FormLabel>
+              <FormLabel>Problem Image (Optional)</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  {...field}
-                  value={field.value || ""}
-                />
+                <div className="space-y-4">
+                  <UploadImage
+                    onUploadComplete={(url) => field.onChange(url)}
+                    initialImageUrl={field.value || ""}
+                    showCamera={false}
+                    showDropZone={true}
+                    placeholder="Drop your problem image here"
+                    minHeight="min-h-[150px]"
+                    uploadButtonText="Upload Problem Image"
+                  />
+                </div>
               </FormControl>
               <FormDescription>
-                Add an optional image to accompany your problem.
+                Add an optional image to accompany your problem. You can either paste a URL or upload an image.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -216,7 +223,7 @@ export default function ManualProblemForm() {
         />
 
         {classroomIdFromQuery && (
-           <FormField
+          <FormField
             control={form.control}
             name="classroomId"
             render={({ field }) => (
