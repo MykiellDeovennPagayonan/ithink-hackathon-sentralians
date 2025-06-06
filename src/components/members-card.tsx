@@ -1,11 +1,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import MembersList from "./members-list";
 import {
   UserWithClassroom,
   Classroom,
 } from "@/declarations/backend/backend.did";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface MembersCardProps {
   members: UserWithClassroom[];
@@ -18,17 +20,36 @@ export default function MembersCard({
   classroom,
   isAdmin,
 }: MembersCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const copyInviteLink = () => {
+    const inviteUrl = `${window.location.origin}/classroom/join?code=${classroom.id}`;
+    navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+
+    toast("Link copied!", {
+      description: "Classroom invite link copied to clipboard",
+      duration: 2000,
+    });
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
+
   return (
     <Card className="h-fit sticky top-20">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Classroom Members</CardTitle>
           {isAdmin && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/classroom/invite?code=${classroom.id}`}>
-                <Users className="w-4 h-4 mr-2" />
-                Invite
-              </a>
+            <Button variant="outline" size="sm" onClick={copyInviteLink}>
+              {copied ? (
+                <Check className="w-4 h-4 mr-2" />
+              ) : (
+                <Copy className="w-4 h-4 mr-2" />
+              )}
+              {copied ? "Copied!" : "Copy Invite Link"}
             </Button>
           )}
         </div>

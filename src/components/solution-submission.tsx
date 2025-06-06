@@ -33,8 +33,8 @@ interface SolutionSubmissionProps {
   onSubmit?: (imageUrl: string) => Promise<void>;
   onUploadComplete: (imageUrl: string) => void;
   className?: string;
-  setIsSubmitting: Dispatch<SetStateAction<boolean>>
-  isSubmitting: boolean
+  setIsSubmitting: Dispatch<SetStateAction<boolean>>;
+  isSubmitting: boolean;
 }
 
 export default function SolutionSubmission({
@@ -86,7 +86,10 @@ export default function SolutionSubmission({
     disabled: !user,
   });
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     if (!user) return;
 
     const input = document.createElement("input");
@@ -274,8 +277,9 @@ export default function SolutionSubmission({
                     </div>
                   ) : (
                     <div
-                      className={`h-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors ${isDragActive ? "bg-gray-50 border-gray-400" : ""
-                        }`}
+                      className={`h-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors ${
+                        isDragActive ? "bg-gray-50 border-gray-400" : ""
+                      }`}
                       onClick={handleUploadClick}
                     >
                       <div className="text-center text-gray-500 p-4">
