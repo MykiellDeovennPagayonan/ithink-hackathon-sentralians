@@ -14,17 +14,20 @@ import {
   getClassroomMembersWithUserInfo,
   getProblemsByClassroom,
   isUserClassroomAdmin,
-  Classroom,
 } from "@/services/classroom-service";
 import { formatRelativeDate } from "@/lib/formatRelativeDate";
 import { useAuth } from "@/contexts/AuthContext";
-import { TempProblem } from "@/services/problem-service";
-import { UserWithClassroom } from "@/declarations/backend/backend.did";
+import {
+  UserWithClassroom,
+  Classroom,
+  Problem,
+} from "@/declarations/backend/backend.did";
+import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
 export default function ClassroomDetail({ code }: { code: string }) {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [members, setMembers] = useState<UserWithClassroom[]>([]);
-  const [problems, setProblems] = useState<TempProblem[]>([]);
+  const [problems, setProblems] = useState<Problem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -96,7 +99,8 @@ export default function ClassroomDetail({ code }: { code: string }) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              Created {formatRelativeDate(classroom.createdAt)}
+              Created
+              {formatRelativeDate(convertBigIntToDate(classroom.createdAt))}
             </div>
             <div className="flex items-center gap-1">
               <BookOpen className="w-4 h-4" />

@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Crown, Users } from "lucide-react";
 import {
+  UserWithClassroom,
   Classroom,
-} from "@/services/classroom-service";
-import { UserWithClassroom } from "@/declarations/backend/backend.did";
+} from "@/declarations/backend/backend.did";
 
 interface MembersListProps {
   members: UserWithClassroom[];
@@ -23,12 +23,8 @@ export default function MembersList({ members, classroom }: MembersListProps) {
   useEffect(() => {
     // In a real app, you'd have admin status in the members data
     // For now, just assume the owner is the only admin
-    const adminUsers = members.filter(
-      (member) => member.isAdmin
-    );
-    const studentUsers = members.filter(
-      (member) => !member.isAdmin
-    );
+    const adminUsers = members.filter((member) => member.isAdmin);
+    const studentUsers = members.filter((member) => !member.isAdmin);
 
     setAdmins(adminUsers);
     setStudents(studentUsers);

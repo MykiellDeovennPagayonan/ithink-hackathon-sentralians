@@ -1,68 +1,110 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import ProblemDisplay from "@/components/problem/problem-display";
 import SolutionSubmission from "@/components/solution-submission";
-import { mockProblems } from "@/mockdata/problems";
-import { mockClassrooms } from "@/mockdata/classrooms";
+import { getProblemById } from "@/services/problem-service";
+import { getClassroomById } from "@/services/classroom-service";
+import { useGetCurrentUser } from "@/services/auth-service";
+import LoadingSpinner from "@/components/loading-spinner";
+import type { Problem, Classroom } from "@/declarations/backend/backend.did";
+import { getClassroomId, hasClassroom } from "@/utils/problem-helpers";
+import { validateSolution } from "@/utils/validateSolution";
 
-export default function Page() {
+interface ProblemWithClassroomData extends Problem {
+  classroom?: Classroom;
+}
+
+export default function ProblemPage() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const { user } = useGetCurrentUser();
 
+  const [problem, setProblem] = useState<ProblemWithClassroomData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-
-  const rawProblem = mockProblems.find((p) => p.id === id);
-  
-  // Handle cases where a problem might not have a classroom
-  const classroom = rawProblem?.classroomId 
-    ? (() => {
-        const c = mockClassrooms.find((c) => c.id === rawProblem.classroomId);
-        const classroomCreatedAt =
-          c && c.createdAt ? new Date(c.createdAt) : new Date();
-        // If invalid, fallback to now
-        return c
-          ? {
-              ...c,
-              createdAt: isNaN(classroomCreatedAt.getTime())
-                ? new Date()
-                : classroomCreatedAt,
-            }
-          : null;
-      })()
-    : null;  // No classroom ID means no classroom needed
-
-  const problem = rawProblem
-    ? {
-        ...rawProblem,
-        // Include classroom only if it exists
-        ...(classroom && { classroom }),
-        imageUrl: rawProblem.imageUrl ?? undefined,
-        createdAt: rawProblem.createdAt
-          ? isNaN(new Date(rawProblem.createdAt).getTime())
-            ? new Date()
-            : new Date(rawProblem.createdAt)
-          : new Date(),
-      }
-    : undefined;
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const handleSolutionSubmit = async (imageData: string) => {
-    console.log("Submitting solution for problem:", imageData);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+  useEffect(() => {
+    const fetchProblem = async () => {
+      if (!id) {
+        setError("No problem ID provided");
+        setLoading(false);
+        return;
+      }
 
-    // In a real app, this would send the image to AI for analysis
-    alert(
-      "Solution submitted! The AI will analyze your work and provide feedback."
-    );
+      try {
+        console.log("Fetching problem with ID:", id);
+
+        // Fetch the problem
+        const problemData = await getProblemById(id);
+
+        if (!problemData) {
+          setError("Problem not found");
+          setLoading(false);
+          return;
+        }
+
+        console.log("Problem data received:", problemData);
+
+        // Check if problem has a classroom and fetch classroom data
+        let classroomData: Classroom | null = null;
+        if (hasClassroom(problemData)) {
+          const classroomId = getClassroomId(problemData);
+          if (classroomId) {
+            try {
+              console.log("Fetching classroom data for ID:", classroomId);
+              classroomData = await getClassroomById(classroomId);
+              console.log("Classroom data received:", classroomData);
+            } catch (classroomError) {
+              console.warn("Could not fetch classroom data:", classroomError);
+              // Don't fail the whole request if classroom fetch fails
+            }
+          }
+        }
+
+        // Combine problem with classroom data
+        const problemWithClassroom: ProblemWithClassroomData = {
+          ...problemData,
+          ...(classroomData && { classroom: classroomData }),
+        };
+
+        setProblem(problemWithClassroom);
+      } catch (err) {
+        console.error("Error fetching problem:", err);
+        setError("Failed to load problem");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProblem();
+  }, [id]);
+
+  const handleSolutionSubmit = async (imageUrl: string) => {
+    if (!problem || !user) {
+      console.error("Cannot submit solution: missing problem or user data");
+      return;
+    }
+
+    try {
+      console.log("Submitting solution for problem:", problem.id);
+      console.log("Image data length:", imageUrl.length);
+
+      const validation = await validateSolution(problem.description, imageUrl);
+      console.log(validation);
+    } catch (error) {
+      console.error("Error submitting solution:", error);
+      alert("Failed to submit solution. Please try again.");
+    }
   };
 
   // Show error state if no ID provided
@@ -86,8 +128,32 @@ export default function Page() {
     );
   }
 
-  // Show error state if problem not found
-  if (!problem) {
+  // Show loading state
+  if (loading || !isMounted) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="mb-4 sm:mb-6">
+            <Link href="/explore">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Explore
+              </Button>
+            </Link>
+          </div>
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <div className="text-center">
+              <LoadingSpinner />
+              <p className="text-gray-500 mt-4">Loading problem...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if problem not found or error occurred
+  if (error || !problem) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -104,47 +170,11 @@ export default function Page() {
               Problem Not Found
             </h1>
             <p className="text-gray-600 mb-6">
-              The problem with ID &quot;{id}&quot; could not be found.
+              {error || `The problem with ID "${id}" could not be found.`}
             </p>
             <Link href="/explore">
               <Button>Browse Problems</Button>
             </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render the equation content until mounted to prevent hydration mismatch
-  if (!isMounted) {
-    return (
-      <div className="min-h-[calc(100vh-64px)] bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          <div className="mb-4 sm:mb-6">
-            <Link href="/explore">
-              <Button variant="ghost" className="mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Explore
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
-            <div className="flex flex-col">
-              <Card className="flex-1">
-                <CardContent className="flex items-center justify-center h-full">
-                  <div className="text-gray-500">Loading problem...</div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="flex flex-col">
-              <Card className="flex-1">
-                <CardContent className="flex items-center justify-center h-full">
-                  <div className="text-gray-500">
-                    Loading submission area...
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </div>

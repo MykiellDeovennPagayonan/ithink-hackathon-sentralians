@@ -2,25 +2,15 @@ import { backend } from "@/declarations/backend";
 import {
   ClassroomInput,
   ClassroomWithMembership,
+  UserClassroom,
   UserClassroomInput,
   UserWithClassroom,
 } from "@/declarations/backend/backend.did";
-import { unwrapOpt } from "@/utils/candid";
-import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
 
-export interface UserClassroom {
-  classroomId: string;
-  userId: string;
-  joinedAt: Date;
-  isAdmin: boolean;
-}
-
-export interface Classroom {
-  id: string;
-  ownerId: string;
-  name: string;
-  createdAt: Date;
-  description: string;
+export interface JoinClassroomResult {
+  success: boolean;
+  message: string;
+  isAlreadyMember?: boolean;
 }
 
 export async function createClassroom(
@@ -59,28 +49,139 @@ export async function createClassroom(
 
 export async function joinClassroom(
   userId: string,
-  classroomId: string
-): Promise<void> {
+  classroomId: string,
+  isAdmin: boolean = false
+): Promise<JoinClassroomResult> {
   try {
+    console.log("Attempting to join classroom:", {
+      userId,
+      classroomId,
+      isAdmin,
+    });
+
+    // First check if classroom exists
     const classroomResult = await backend.getClassroomById(classroomId);
     if (classroomResult.length === 0) {
-      throw new Error("Classroom not found");
+      throw new Error("CLASSROOM_NOT_FOUND");
     }
 
     const joinClassroomInput: UserClassroomInput = {
       classroomId,
       userId,
-      isAdmin: false,
+      isAdmin: isAdmin,
     };
 
     const result = await backend.joinClassroom(joinClassroomInput);
 
     if ("err" in result) {
-      throw new Error(result.err);
+      // Handle specific backend error messages
+      const errorMessage = result.err.toLowerCase();
+
+      // Check if this is an "already a member" error
+      if (errorMessage.includes("already") && errorMessage.includes("member")) {
+        console.log("User is already a member, treating as success");
+        return {
+          success: true,
+          message: "You're already a member of this classroom",
+          isAlreadyMember: true,
+        };
+      }
+
+      if (errorMessage.includes("full") || errorMessage.includes("capacity")) {
+        throw new Error(
+          "This classroom has reached its maximum capacity. Please contact the instructor."
+        );
+      }
+
+      if (
+        errorMessage.includes("permission") ||
+        errorMessage.includes("access")
+      ) {
+        throw new Error(
+          "You don't have permission to join this classroom. Please contact the instructor."
+        );
+      }
+
+      if (
+        errorMessage.includes("closed") ||
+        errorMessage.includes("inactive")
+      ) {
+        throw new Error("This classroom is no longer accepting new members.");
+      }
+
+      // Generic backend error
+      throw new Error(`Unable to join classroom: ${result.err}`);
     }
-  } catch (error) {
+
+    // Success case - user successfully joined
+    console.log("Successfully joined classroom");
+    return {
+      success: true,
+      message: "Successfully joined the classroom!",
+      isAlreadyMember: false,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     console.error("Error joining classroom:", error);
-    throw error;
+
+    // Check if this is the "already a member" error thrown as an exception
+    if (
+      error.message &&
+      error.message.toLowerCase().includes("already") &&
+      error.message.toLowerCase().includes("member")
+    ) {
+      console.log("Caught 'already a member' exception, treating as success");
+      return {
+        success: true,
+        message: "You're already a member of this classroom",
+        isAlreadyMember: true,
+      };
+    }
+
+    // Handle specific error types we threw above
+    if (error.message === "CLASSROOM_NOT_FOUND") {
+      throw new Error(
+        "The classroom you're trying to join doesn't exist. Please check the classroom code."
+      );
+    }
+
+    // Handle network/connection errors
+    if (error.name === "NetworkError" || error.message.includes("fetch")) {
+      throw new Error(
+        "Unable to connect to the server. Please check your internet connection and try again."
+      );
+    }
+
+    // Handle backend/canister errors
+    if (error.message.includes("canister")) {
+      throw new Error(
+        "The classroom service is temporarily unavailable. Please try again in a few moments."
+      );
+    }
+
+    // Handle authentication errors
+    if (
+      error.message.includes("unauthorized") ||
+      error.message.includes("authentication")
+    ) {
+      throw new Error(
+        "Your session has expired. Please log in again and try joining the classroom."
+      );
+    }
+
+    // If it's already a custom error message, re-throw it
+    if (
+      error.message.includes("classroom") ||
+      error.message.includes("permission") ||
+      error.message.includes("capacity")
+    ) {
+      throw error;
+    }
+
+    // Generic error fallback
+    throw new Error(
+      "Failed to join classroom. Please try again or contact support if the problem persists."
+    );
   }
 }
 
@@ -103,9 +204,9 @@ export async function getUserClassroomsWithDetails(
   userId: string
 ): Promise<ClassroomWithMembership[]> {
   try {
-    const userClassrooms = await backend.getUserClassrooms(userId)
+    const userClassrooms = await backend.getUserClassrooms(userId);
 
-    return userClassrooms
+    return userClassrooms;
   } catch (error) {
     console.error("Error fetching user classrooms with details:", error);
     throw error;
@@ -117,7 +218,7 @@ export async function getClassroomsByOwner(userId: string) {
     const classrooms = await backend.getClassroomsByOwner(userId);
     return classrooms.map((classroom) => ({
       ...classroom,
-      createdAt: convertBigIntToDate(classroom.createdAt),
+      createdAt: classroom.createdAt,
     }));
   } catch (error) {
     console.error("Error fetching classrooms by owner:", error);
@@ -134,7 +235,7 @@ export async function getClassroomById(classroomId: string) {
     const classroom = classroomResult[0];
     return {
       ...classroom,
-      createdAt: convertBigIntToDate(classroom.createdAt),
+      createdAt: classroom.createdAt,
     };
   } catch (error) {
     console.error("Error fetching classroom:", error);
@@ -146,7 +247,7 @@ export async function getClassroomMembers(classroomId: string) {
   try {
     const members = await backend.getClassroomMembers(classroomId);
 
-    return members
+    return members;
   } catch (error) {
     console.error("Error fetching classroom members:", error);
     throw error;
@@ -164,7 +265,7 @@ export async function getClassroomMembersWithUserInfo(
   try {
     const members = await getClassroomMembers(classroomId);
 
-    return members
+    return members;
   } catch (error) {
     console.error("Error fetching classroom members with user info:", error);
     throw error;
@@ -176,9 +277,9 @@ export async function getProblemsByClassroom(classroomId: string) {
     const problems = await backend.getProblemsByClassroom(classroomId);
     return problems.map((problem) => ({
       ...problem,
-      createdAt: convertBigIntToDate(problem.createdAt),
-      classroomId: unwrapOpt(problem.classroomId),
-      imageUrl: unwrapOpt(problem.imageUrl),
+      createdAt: problem.createdAt,
+      classroomId: problem.classroomId,
+      imageUrl: problem.imageUrl,
     }));
   } catch (error) {
     console.error("Error fetching classroom problems:", error);
