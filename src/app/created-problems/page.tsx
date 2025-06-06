@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Code, LogIn, UserPlus, Plus } from "lucide-react";
+import { LogIn, UserPlus, Plus, Pi } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,7 @@ export default function CreatedProblemsPageClient() {
               Created Problems
             </h1>
             <p className="text-gray-600 mt-1">
-              Manage and track the coding problems you&apos;ve created
+              Manage and track the math problems you&apos;ve created
             </p>
           </div>
           <Button asChild>
@@ -129,14 +129,14 @@ function NotLoggedInView() {
         <div className="max-w-2xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-              <Code className="h-8 w-8" />
+              <Pi className="h-8 w-8" />
             </div>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
             Access Your Created Problems
           </h1>
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            You need to be logged in to view and manage the coding problems
+            You need to be logged in to view and manage the math problems
             you&apos;ve created. Create, edit, and track the performance of your
             problems.
           </p>
@@ -157,7 +157,7 @@ function NotLoggedInView() {
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-700">
               <strong>New to AI Teach?</strong> Create an account to start
-              creating and managing coding problems.
+              creating and managing math problems.
             </p>
           </div>
         </div>

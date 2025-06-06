@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, LogIn, UserPlus, Code } from "lucide-react";
+import { ArrowLeft, LogIn, UserPlus, Pi } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,7 @@ export default function CreateProblemPage() {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                <Code className="h-8 w-8" />
+                <Pi className="h-8 w-8" />
               </div>
             </div>
             <CardTitle className="text-2xl">Authentication Required</CardTitle>
@@ -65,7 +65,7 @@ export default function CreateProblemPage() {
           <CardContent className="space-y-6">
             <div className="text-center space-y-4">
               <p className="text-gray-600">
-                Creating problems allows you to share coding challenges with
+                Creating problems allows you to share math challenges with
                 others and track their progress.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
