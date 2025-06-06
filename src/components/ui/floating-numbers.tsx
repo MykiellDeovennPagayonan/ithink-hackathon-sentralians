@@ -17,7 +17,7 @@ function FloatingMathElement(props: { element: MathElement }) {
   const { element } = props;
   return (
     <motion.div
-      className="absolute pointer-events-none select-none font-light"
+      className="absolute pointer-events-none text-white select-none font-light"
       style={{
         left: element.x,
         top: element.y,
