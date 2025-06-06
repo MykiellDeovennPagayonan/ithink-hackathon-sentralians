@@ -1,15 +1,20 @@
 "use client";
 
-import React, { useState }
-from "react";
+import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { generateProblems } from "@/utils/generateProblems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import ProblemDisplay from "@/components/problem/problem-display";
+import { createProblem } from "@/services/problem-service";
+import { useAuth } from "@/contexts/AuthContext";
 // import { toast } from "@/components/ui/use-toast";
 
 interface Problem {
+  title: string
   difficulty: string;
   topic: string;
   problem_latex: string;
@@ -28,36 +33,38 @@ interface GenerateResult {
   };
 }
 
+const adaptProblemForDisplay = (problem: Problem, index: number) => ({
+  id: problem.title,
+  title: `${problem.topic} Problem ${index + 1}`,
+  description: problem.problem_latex,
+  category: problem.topic,
+  difficulty: problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1).toLowerCase(),
+  isPublic: true,
+  createdAt: new Date(),
+});
+
 export default function AiProblemGeneratorForm() {
   const [topic, setTopic] = useState("");
   const [referenceQuestion, setReferenceQuestion] = useState("");
   const [numQuestions, setNumQuestions] = useState(1);
+  const [isPublic, setIsPublic] = useState(true);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const classroomIdFromQuery = searchParams.get("classroomId");
+  const { user, loading: authLoading } = useAuth();
 
   const handleGenerate = async () => {
     if (!topic.trim() && !referenceQuestion.trim()) {
       setError(
         "Please provide either a topic or a reference question (or both)."
       );
-      // toast({
-      //   title: "Input Required",
-      //   description: "Provide a topic or reference question.",
-      //   variant: "destructive",
-      // });
       return;
     }
 
     if (numQuestions < 1 || numQuestions > 5) {
       setError("Number of questions must be between 1 and 5.");
-      // toast({
-      //   title: "Invalid Input",
-      //   description: "Number of questions must be between 1 and 5.",
-      //   variant: "destructive",
-      // });
       return;
     }
 
@@ -72,31 +79,10 @@ export default function AiProblemGeneratorForm() {
         numQuestions
       );
       setResult(response as unknown as GenerateResult);
-      if (
-        response &&
-        response.function_call?.arguments?.problems?.length > 0
-      ) {
-        // toast({
-        //   title: "Problems Generated! ✨",
-        //   description: `Successfully generated ${response.function_call.function.arguments.problems.length} problem(s).`,
-        // });
-      } else {
-        // toast({
-        //   title: "No Problems Generated",
-        //   description:
-        //     "The AI couldn't generate problems with the given input. Try refining your query.",
-        //   variant: "default",
-        // });
-      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to generate problems";
       setError(errorMessage);
-      // toast({
-      //   title: "Generation Failed 😟",
-      //   description: errorMessage,
-      //   variant: "destructive",
-      // });
     } finally {
       setLoading(false);
     }
@@ -124,34 +110,37 @@ export default function AiProblemGeneratorForm() {
 
   const canGenerate = topic.trim() || referenceQuestion.trim();
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case "easy":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "hard":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
-    }
-  };
-
   const handleUseAiProblem = (problem: Problem) => {
     console.log("Attempting to use AI Problem:", problem);
+
+    const userId = user?.id;
+    if (!userId) {
+      setError("You must be logged in to create problems.");
+      return;
+    }
+
     if (classroomIdFromQuery) {
       console.log("Target Classroom ID:", classroomIdFromQuery);
-      // toast({
-      //   title: "Use This Problem (Dev)",
-      //   description: `Selected problem could be added to Classroom ID: ${classroomIdFromQuery}. Implement saving logic or navigation to pre-fill manual form.`,
-      //   duration: 5000,
-      // });
+
+      const problemData = {
+        title: problem.title,
+        description: problem.problem_latex,
+        imageUrl: null,
+        classroomId: classroomIdFromQuery,
+        isPublic: isPublic,
+      };
+
+      createProblem(problemData, userId);
     } else {
-      // toast({
-      //   title: "Use This Problem (Dev)",
-      //   description: `Selected problem could be saved as a public problem. Implement saving logic or navigation.`,
-      //   duration: 5000,
-      // });
+      const problemData = {
+        title: problem.title,
+        description: problem.problem_latex,
+        imageUrl: null,
+        classroomId: null,
+        isPublic: isPublic,
+      };
+
+      createProblem(problemData, userId);
     }
   };
 
@@ -203,7 +192,7 @@ export default function AiProblemGeneratorForm() {
 
         <div>
           <label
-            htmlFor="ai-referenceQuestion" // Changed id
+            htmlFor="ai-referenceQuestion"
             className="block text-sm font-medium text-foreground mb-1"
           >
             Reference Question (optional)
@@ -224,7 +213,7 @@ export default function AiProblemGeneratorForm() {
 
         <div>
           <label
-            htmlFor="ai-numQuestions" // Changed id
+            htmlFor="ai-numQuestions"
             className="block text-sm font-medium text-foreground mb-1"
           >
             Number of Questions (1-5)
@@ -239,6 +228,17 @@ export default function AiProblemGeneratorForm() {
           />
         </div>
 
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="ai-isPublic"
+            checked={isPublic}
+            onCheckedChange={setIsPublic}
+          />
+          <Label htmlFor="ai-isPublic" className="text-sm font-medium">
+            Make problems public
+          </Label>
+        </div>
+
         <Button
           onClick={handleGenerate}
           disabled={loading || !canGenerate}
@@ -246,9 +246,8 @@ export default function AiProblemGeneratorForm() {
         >
           {loading
             ? "Generating..."
-            : `Generate ${numQuestions} Problem${
-                numQuestions !== 1 ? "s" : ""
-              }`}
+            : `Generate ${numQuestions} Problem${numQuestions !== 1 ? "s" : ""
+            }`}
         </Button>
       </div>
 
@@ -258,54 +257,34 @@ export default function AiProblemGeneratorForm() {
         </div>
       )}
 
+      {/* Replace the manual problem rendering with ProblemDisplay */}
       {result && result.function_call?.function?.arguments?.problems && (
         <div className="mt-6 space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
-            Generated Problems (
-            {result.function_call.function.arguments.problems.length})
+            Generated Problems ({result.function_call.function.arguments.problems.length})
           </h3>
 
-          {result.function_call.function.arguments.problems.map(
-            (problem, index) => (
-              <div
-                key={index}
-                className="bg-card border rounded-lg p-4 shadow-sm"
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2">
-                  <h4 className="text-md font-medium text-foreground">
-                    Problem {index + 1}
-                  </h4>
-                  <div className="flex gap-2 flex-wrap">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(
-                        problem.difficulty
-                      )}`}
-                    >
-                      {problem.difficulty || "N/A"}
-                    </span>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      {problem.topic || "N/A"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 p-3 rounded-md">
-                  <p className="text-foreground font-mono text-sm leading-relaxed whitespace-pre-wrap">
-                    {problem.problem_latex}
-                  </p>
-                </div>
-                <div className="mt-3 flex justify-end">
+          <div className="grid gap-4">
+            {result.function_call.function.arguments.problems.map((problem, index) => (
+              <div key={index} className="relative">
+                <ProblemDisplay
+                  problem={adaptProblemForDisplay(problem, index)}
+                  className="w-full"
+                />
+                <div className="absolute top-4 right-4">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleUseAiProblem(problem)}
+                    className="bg-background/80 backdrop-blur-sm"
+                    disabled={!user?.id || authLoading}
                   >
-                    Use Problem
+                    {!user?.id ? "Login Required" : "Use Problem"}
                   </Button>
                 </div>
               </div>
-            )
-          )}
+            ))}
+          </div>
 
           <details className="mt-4">
             <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
