@@ -5,6 +5,7 @@ import { generateProblems } from '@/utils/generateProblems';
 import ProblemDisplay from '@/components/problem/problem-display';
 
 interface Problem {
+  title: string
   difficulty: string;
   topic: string;
   problem_latex: string;
@@ -23,14 +24,9 @@ interface GenerateResult {
   };
 }
 
-const adaptProblemForDisplay = (problem: Problem, index: number) => ({
-  id: `generated-${index}`,
-  title: `${problem.topic} Problem ${index + 1}`,
+const adaptProblemForDisplay = (problem: Problem) => ({
+  title: problem.title,
   description: problem.problem_latex,
-  category: problem.topic,
-  difficulty: problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1).toLowerCase(),
-  isPublic: true,
-  createdAt: new Date(),
 });
 
 export default function ProblemGenerator() {
@@ -199,7 +195,7 @@ export default function ProblemGenerator() {
             {result.function_call.function.arguments.problems.map((problem, index) => (
               <ProblemDisplay
                 key={index}
-                problem={adaptProblemForDisplay(problem, index)}
+                problem={adaptProblemForDisplay(problem)}
                 className="w-full"
               />
             ))}

@@ -33,14 +33,9 @@ interface GenerateResult {
   };
 }
 
-const adaptProblemForDisplay = (problem: Problem, index: number) => ({
-  id: problem.title,
-  title: `${problem.topic} Problem ${index + 1}`,
+const adaptProblemForDisplay = (problem: Problem) => ({
+  title: problem.title,
   description: problem.problem_latex,
-  category: problem.topic,
-  difficulty: problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1).toLowerCase(),
-  isPublic: true,
-  createdAt: new Date(),
 });
 
 export default function AiProblemGeneratorForm() {
@@ -268,7 +263,7 @@ export default function AiProblemGeneratorForm() {
             {result.function_call.function.arguments.problems.map((problem, index) => (
               <div key={index} className="relative">
                 <ProblemDisplay
-                  problem={adaptProblemForDisplay(problem, index)}
+                  problem={adaptProblemForDisplay(problem)}
                   className="w-full"
                 />
                 <div className="absolute top-4 right-4">
