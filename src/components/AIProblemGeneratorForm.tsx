@@ -6,10 +6,15 @@ import { generateProblems } from "@/utils/generateProblems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import ProblemDisplay from "@/components/problem/problem-display"; // Add this import
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import ProblemDisplay from "@/components/problem/problem-display";
+import { createProblem } from "@/services/problem-service";
+import { useAuth } from "@/contexts/AuthContext";
 // import { toast } from "@/components/ui/use-toast";
 
 interface Problem {
+  title: string
   difficulty: string;
   topic: string;
   problem_latex: string;
@@ -28,9 +33,8 @@ interface GenerateResult {
   };
 }
 
-// Add the adapter function from ProblemGenerator
 const adaptProblemForDisplay = (problem: Problem, index: number) => ({
-  id: `generated-${index}`,
+  id: problem.title,
   title: `${problem.topic} Problem ${index + 1}`,
   description: problem.problem_latex,
   category: problem.topic,
@@ -43,11 +47,13 @@ export default function AiProblemGeneratorForm() {
   const [topic, setTopic] = useState("");
   const [referenceQuestion, setReferenceQuestion] = useState("");
   const [numQuestions, setNumQuestions] = useState(1);
+  const [isPublic, setIsPublic] = useState(true);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const classroomIdFromQuery = searchParams.get("classroomId");
+  const { user, loading: authLoading } = useAuth();
 
   const handleGenerate = async () => {
     if (!topic.trim() && !referenceQuestion.trim()) {
@@ -106,11 +112,35 @@ export default function AiProblemGeneratorForm() {
 
   const handleUseAiProblem = (problem: Problem) => {
     console.log("Attempting to use AI Problem:", problem);
+
+    const userId = user?.id;
+    if (!userId) {
+      setError("You must be logged in to create problems.");
+      return;
+    }
+
     if (classroomIdFromQuery) {
       console.log("Target Classroom ID:", classroomIdFromQuery);
-      // Implementation for saving to classroom
+
+      const problemData = {
+        title: problem.title,
+        description: problem.problem_latex,
+        imageUrl: null,
+        classroomId: classroomIdFromQuery,
+        isPublic: isPublic,
+      };
+
+      createProblem(problemData, userId);
     } else {
-      // Implementation for saving as public problem
+      const problemData = {
+        title: problem.title,
+        description: problem.problem_latex,
+        imageUrl: null,
+        classroomId: null,
+        isPublic: isPublic,
+      };
+
+      createProblem(problemData, userId);
     }
   };
 
@@ -198,6 +228,17 @@ export default function AiProblemGeneratorForm() {
           />
         </div>
 
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="ai-isPublic"
+            checked={isPublic}
+            onCheckedChange={setIsPublic}
+          />
+          <Label htmlFor="ai-isPublic" className="text-sm font-medium">
+            Make problems public
+          </Label>
+        </div>
+
         <Button
           onClick={handleGenerate}
           disabled={loading || !canGenerate}
@@ -205,9 +246,8 @@ export default function AiProblemGeneratorForm() {
         >
           {loading
             ? "Generating..."
-            : `Generate ${numQuestions} Problem${
-                numQuestions !== 1 ? "s" : ""
-              }`}
+            : `Generate ${numQuestions} Problem${numQuestions !== 1 ? "s" : ""
+            }`}
         </Button>
       </div>
 
@@ -223,7 +263,7 @@ export default function AiProblemGeneratorForm() {
           <h3 className="text-lg font-semibold text-foreground">
             Generated Problems ({result.function_call.function.arguments.problems.length})
           </h3>
-          
+
           <div className="grid gap-4">
             {result.function_call.function.arguments.problems.map((problem, index) => (
               <div key={index} className="relative">
@@ -231,15 +271,15 @@ export default function AiProblemGeneratorForm() {
                   problem={adaptProblemForDisplay(problem, index)}
                   className="w-full"
                 />
-                {/* Add a custom "Use Problem" button overlay or modify ProblemDisplay to accept custom actions */}
                 <div className="absolute top-4 right-4">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleUseAiProblem(problem)}
                     className="bg-background/80 backdrop-blur-sm"
+                    disabled={!user?.id || authLoading}
                   >
-                    Use Problem
+                    {!user?.id ? "Login Required" : "Use Problem"}
                   </Button>
                 </div>
               </div>
