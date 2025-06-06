@@ -77,12 +77,10 @@ export default function ProblemPage() {
               console.log("Classroom data received:", classroomData);
             } catch (classroomError) {
               console.warn("Could not fetch classroom data:", classroomError);
-              // Don't fail the whole request if classroom fetch fails
             }
           }
         }
 
-        // Combine problem with classroom data
         const problemWithClassroom: ProblemWithClassroomData = {
           ...problemData,
           ...(classroomData && { classroom: classroomData }),

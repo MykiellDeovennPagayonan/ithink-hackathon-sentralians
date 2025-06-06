@@ -52,9 +52,7 @@ export async function getProblemById(id: string): Promise<Problem | null> {
       return null;
     }
 
-    const problem = result[0];
-
-    return problem;
+    return result[0];
   } catch (error) {
     console.error("Error fetching problem by ID:", error);
     return null;
@@ -63,7 +61,7 @@ export async function getProblemById(id: string): Promise<Problem | null> {
 
 export async function getProblemsByUserId(
   userId: string
-): Promise<Problem | null> {
+): Promise<Problem[] | null> {
   try {
     console.log("Fetching problem by user ID:", userId);
 
@@ -74,7 +72,7 @@ export async function getProblemsByUserId(
       return null;
     }
 
-    return result[0];
+    return result;
   } catch (error) {
     console.error("Error fetching problem by user ID:", error);
     return null;

@@ -36,7 +36,9 @@ module ProblemService {
       };
 
       getPublicProblems = func() : async [Types.Problem] {
-        store.isPublic.find("true", "true", #fwd, 100);
+        let startKey = "true" # "_";
+        let endKey = "true" # "_~";
+        store.isPublic.find(startKey, endKey, #fwd, 100);
       };
 
       update = func(problem : Types.Problem) : async Result.Result<(), Text> {
