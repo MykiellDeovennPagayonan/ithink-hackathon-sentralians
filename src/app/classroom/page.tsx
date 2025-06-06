@@ -13,7 +13,7 @@ import { useGetCurrentUser } from "@/services/auth-service";
 import LoadingSpinner from "@/components/loading-spinner";
 import ClassroomDetail from "@/components/classroom-detail";
 import ClassroomActions from "@/components/classroom-actions";
-import { Classroom } from "@/declarations/backend/backend.did";
+import type { Classroom } from "@/declarations/backend/backend.did";
 
 export default function ClassroomPageClient() {
   const searchParams = useSearchParams();
@@ -27,11 +27,11 @@ export default function ClassroomPageClient() {
 
   useEffect(() => {
     const fetchClassrooms = async () => {
-      if (!user) return;
-
       try {
-        const fetchedClassrooms = await getClassroomsByOwner(user.id);
-        setClassrooms(fetchedClassrooms);
+        if (user) {
+          const fetchedClassrooms = await getClassroomsByOwner(user.id);
+          setClassrooms(fetchedClassrooms);
+        }
       } catch (err) {
         console.error("Failed to fetch classrooms:", err);
         setError("Failed to load classrooms. Please try again later.");
@@ -40,10 +40,14 @@ export default function ClassroomPageClient() {
       }
     };
 
-    if (user) {
-      fetchClassrooms();
+    if (!authLoading) {
+      if (user) {
+        fetchClassrooms();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (code) {
     return (

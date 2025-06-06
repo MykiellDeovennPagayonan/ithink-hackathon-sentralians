@@ -66,7 +66,7 @@ actor {
   };
 
   public shared func getClassroomsByOwner(ownerId : Text) : async [Types.Classroom] {
-    await classroomService.getByOwner(ownerId);
+    await classroomService.getClassroomsByOwner(ownerId);
   };
 
   public shared func updateClassroom(classroom : Types.Classroom) : async Result.Result<(), Text> {
@@ -114,11 +114,11 @@ actor {
   };
 
   public shared func getSolutionsByProblem(problemId : Text) : async [Types.Solution] {
-    await solutionService.getByProblem(problemId);
+    await solutionService.getSolutionsByProblem(problemId);
   };
 
   public shared func getSolutionsByUser(userId : Text) : async [Types.Solution] {
-    await solutionService.getByUser(userId);
+    await solutionService.getSolutionsByUser(userId);
   };
 
   public shared func getCorrectSolutions(problemId : Text) : async [Types.Solution] {

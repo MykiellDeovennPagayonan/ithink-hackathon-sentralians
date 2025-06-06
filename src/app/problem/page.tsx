@@ -1,33 +1,45 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import ProblemDisplay from "@/components/problem/problem-display";
-import SolutionSubmission from "@/components/solution-submission";
-import { getProblemById } from "@/services/problem-service";
-import { getClassroomById } from "@/services/classroom-service";
-import { useGetCurrentUser } from "@/services/auth-service";
-import LoadingSpinner from "@/components/loading-spinner";
-import type { Problem, Classroom } from "@/declarations/backend/backend.did";
-import { getClassroomId, hasClassroom } from "@/utils/problem-helpers";
 import { validateSolution } from "@/utils/validateSolution";
+import { Classroom, Problem } from "@/declarations/backend/backend.did";
+import ValidationDisplay, { ValidationResult } from "@/components/ValidationDisplay";
+import { useGetCurrentUser } from "@/services/auth-service";
+import { getProblemById } from "@/services/problem-service";
+import { getClassroomId, hasClassroom } from "@/utils/problem-helpers";
+import { getClassroomById } from "@/services/classroom-service";
+import LoadingSpinner from "@/components/loading-spinner";
+import SolutionSubmission from "@/components/solution-submission";
 
 interface ProblemWithClassroomData extends Problem {
   classroom?: Classroom;
 }
 
-export default function ProblemPage() {
+const adaptProblemForDisplay = (problem: Problem) => {
+  const imageUrlInitial = problem.imageUrl.length > 0 ? problem.imageUrl[0] : undefined;
+  return {
+    title: problem.title,
+    description: problem.description,
+    createdAt: problem.createdAt,
+    imageUrl: imageUrlInitial,
+  };
+};
+
+export default function Page() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const { user } = useGetCurrentUser();
-
   const [problem, setProblem] = useState<ProblemWithClassroomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const validationRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -44,7 +56,6 @@ export default function ProblemPage() {
       try {
         console.log("Fetching problem with ID:", id);
 
-        // Fetch the problem
         const problemData = await getProblemById(id);
 
         if (!problemData) {
@@ -55,7 +66,6 @@ export default function ProblemPage() {
 
         console.log("Problem data received:", problemData);
 
-        // Check if problem has a classroom and fetch classroom data
         let classroomData: Classroom | null = null;
         if (hasClassroom(problemData)) {
           const classroomId = getClassroomId(problemData);
@@ -66,12 +76,10 @@ export default function ProblemPage() {
               console.log("Classroom data received:", classroomData);
             } catch (classroomError) {
               console.warn("Could not fetch classroom data:", classroomError);
-              // Don't fail the whole request if classroom fetch fails
             }
           }
         }
 
-        // Combine problem with classroom data
         const problemWithClassroom: ProblemWithClassroomData = {
           ...problemData,
           ...(classroomData && { classroom: classroomData }),
@@ -89,25 +97,38 @@ export default function ProblemPage() {
     fetchProblem();
   }, [id]);
 
-  const handleSolutionSubmit = async (imageUrl: string) => {
+  useEffect(() => {
+    if (validationResult && validationRef.current) {
+      validationRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [validationResult]);
+
+  const handleUploadComplete = (imageUrl: string) => {
+    console.log("Upload completed:", imageUrl);
+  };
+
+  const handleSubmit = async (imageUrl: string) => {
     if (!problem || !user) {
       console.error("Cannot submit solution: missing problem or user data");
       return;
     }
-
+    setIsSubmitting(true);
+    console.log(imageUrl);
     try {
-      console.log("Submitting solution for problem:", problem.id);
-      console.log("Image data length:", imageUrl.length);
-
-      const validation = await validateSolution(problem.description, imageUrl);
-      console.log(validation);
+      const question = problem?.description
+      if (question) {
+        const validation = await validateSolution(question, imageUrl);
+        console.log(validation);
+        setValidationResult(validation as unknown as ValidationResult);
+      }
     } catch (error) {
-      console.error("Error submitting solution:", error);
+      console.error("Submission error:", error);
       alert("Failed to submit solution. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Show error state if no ID provided
   if (!id) {
     return (
       <div className="min-h-[calc(100vh-64px)] bg-gray-50">
@@ -196,14 +217,23 @@ export default function ProblemPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 min-h-[calc(100vh-160px)]">
           {/* Left Side - Problem Display */}
           <div className="flex flex-col order-1 lg:order-1">
-            <ProblemDisplay problem={problem} />
+            <ProblemDisplay problem={adaptProblemForDisplay(problem)} />
           </div>
 
           {/* Right Side - Submission Area */}
-          <div className="flex flex-col order-2 lg:order-2">
-            <SolutionSubmission onSubmit={handleSolutionSubmit} />
-          </div>
+          <SolutionSubmission
+            onUploadComplete={handleUploadComplete}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            setIsSubmitting={setIsSubmitting}
+          />
         </div>
+
+        {validationResult && (
+          <div ref={validationRef}>
+            <ValidationDisplay validation={validationResult} />
+          </div>
+        )}
       </div>
     </div>
   );

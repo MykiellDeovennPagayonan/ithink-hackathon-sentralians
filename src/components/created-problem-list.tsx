@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Code, Plus, Calendar, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Calendar, Edit, Eye, Trash2, Pi } from "lucide-react";
 import { formatRelativeDate } from "@/lib/formatRelativeDate";
 import type { Problem } from "@/declarations/backend/backend.did";
 import { convertBigIntToDate } from "@/utils/convertBigIntToDate";
@@ -20,10 +20,10 @@ export default function CreatedProblemList({
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <Code className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <Pi className="h-12 w-12 mx-auto text-gray-400 mb-4" />
           <h3 className="text-lg font-medium mb-2">No problems created yet</h3>
           <p className="text-gray-500 mb-4 max-w-md mx-auto">
-            You haven&apos;t created any problems yet. Start creating coding
+            You haven&apos;t created any problems yet. Start creating math
             problems to help others learn and practice.
           </p>
           <Button asChild>

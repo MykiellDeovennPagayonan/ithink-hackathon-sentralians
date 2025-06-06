@@ -109,7 +109,35 @@
   }
 }
 
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
+.animate-rotate-cw {
+  animation: rotate-clockwise 14s linear infinite;
+}
+
+.animate-rotate-ccw {
+  animation: rotate-counter 18s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.animate-combined-cw {
+  animation:
+    float 6s ease-in-out infinite,
+    rotate-clockwise 14s linear infinite,
+    pulse 4s ease-in-out infinite;
+}
+
+.animate-combined-ccw {
+  animation:
+    float 6s ease-in-out infinite,
+    rotate-counter 18s linear infinite,
+    pulse 4s ease-in-out infinite;
+}
 
 @layer base {
   * {

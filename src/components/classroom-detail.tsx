@@ -99,7 +99,7 @@ export default function ClassroomDetail({ code }: { code: string }) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              Created
+              Created{" "}
               {formatRelativeDate(convertBigIntToDate(classroom.createdAt))}
             </div>
             <div className="flex items-center gap-1">
@@ -131,7 +131,7 @@ export default function ClassroomDetail({ code }: { code: string }) {
               </h2>
               {isAdmin && (
                 <Button className="w-full sm:w-auto" asChild>
-                  <Link href={`/classroom/${code}/problem/new`}>
+                  <Link href={`/problem/create?classroomId=${code}`}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Problem
                   </Link>

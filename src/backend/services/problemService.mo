@@ -6,13 +6,13 @@ import Time "mo:base/Time";
 
 module ProblemService {
   public func init(store : Problems.Use) : {
-    create             : (Types.ProblemInput) -> async Result.Result<Types.Problem, Text>;
-    getById            : (Text) -> async ?Types.Problem;
-    getByClassroom     : (Text) -> async [Types.Problem];
-    getByCreator       : (Text) -> async [Types.Problem]; // Add this
-    getPublicProblems  : () -> async [Types.Problem];
-    update             : (Types.Problem) -> async Result.Result<(), Text>;
-    delete             : (Text) -> async Result.Result<(), Text>;
+    create : (Types.ProblemInput) -> async Result.Result<Types.Problem, Text>;
+    getById : (Text) -> async ?Types.Problem;
+    getByClassroom : (Text) -> async [Types.Problem];
+    getByCreator : (Text) -> async [Types.Problem];
+    getPublicProblems : () -> async [Types.Problem];
+    update : (Types.Problem) -> async Result.Result<(), Text>;
+    delete : (Text) -> async Result.Result<(), Text>;
   } {
     return {
       create = func(problemInput : Types.ProblemInput) : async Result.Result<Types.Problem, Text> {
@@ -24,15 +24,21 @@ module ProblemService {
       };
 
       getByClassroom = func(classroomId : Text) : async [Types.Problem] {
-        store.classroom.find(classroomId, classroomId, #fwd, 100)
+        let startKey = classroomId # "_";
+        let endKey = classroomId # "_~";
+        store.classroom.find(startKey, endKey, #fwd, 100);
       };
 
       getByCreator = func(creatorId : Text) : async [Types.Problem] {
-        store.creator.find(creatorId, creatorId, #fwd, 100)
+        let startKey = creatorId # "_";
+        let endKey = creatorId # "_~";
+        store.creator.find(startKey, endKey, #fwd, 100);
       };
 
       getPublicProblems = func() : async [Types.Problem] {
-        store.isPublic.find("true", "true", #fwd, 100)
+        let startKey = "true" # "_";
+        let endKey = "true" # "_~";
+        store.isPublic.find(startKey, endKey, #fwd, 100);
       };
 
       update = func(problem : Types.Problem) : async Result.Result<(), Text> {
@@ -44,10 +50,10 @@ module ProblemService {
         switch (existing) {
           case (?_) {
             store.pk.delete(id);
-            #ok
+            #ok;
           };
           case null {
-            #err("Problem not found")
+            #err("Problem not found");
           };
         };
       };
@@ -87,11 +93,11 @@ module ProblemService {
     switch (existing) {
       case (?_) {
         store.db.insert(problem);
-        #ok
+        #ok;
       };
       case null {
-        #err("Problem not found")
+        #err("Problem not found");
       };
     };
   };
-}
+};

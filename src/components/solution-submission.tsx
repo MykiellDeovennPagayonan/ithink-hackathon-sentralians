@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
 import { useUploadThing } from "@/utils/uploadthing";
@@ -31,17 +31,22 @@ type FileWithPreview = File & { preview: string };
 
 interface SolutionSubmissionProps {
   onSubmit?: (imageUrl: string) => Promise<void>;
+  onUploadComplete: (imageUrl: string) => void;
   className?: string;
+  setIsSubmitting: Dispatch<SetStateAction<boolean>>;
+  isSubmitting: boolean;
 }
 
 export default function SolutionSubmission({
   onSubmit,
+  onUploadComplete,
+  setIsSubmitting,
+  isSubmitting,
   className = "",
 }: SolutionSubmissionProps) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user } = useGetCurrentUser();
 
@@ -51,6 +56,7 @@ export default function SolutionSubmission({
         const url = uploadedFiles[0].url;
         console.log("Uploaded file URL:", url);
         setUploadedImageUrl(url);
+        onUploadComplete(url);
       }
       setFiles([]);
     },
@@ -80,7 +86,10 @@ export default function SolutionSubmission({
     disabled: !user,
   });
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     if (!user) return;
 
     const input = document.createElement("input");

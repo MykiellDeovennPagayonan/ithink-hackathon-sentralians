@@ -24,15 +24,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Menu,
-  User,
-  LogOut,
-  Settings,
-  Users,
-  Search,
-  Brain,
-} from "lucide-react";
+import { Menu, User, LogOut, Users, Search, Brain } from "lucide-react";
 
 const navigationItems = [
   {
@@ -45,13 +37,13 @@ const navigationItems = [
     name: "Classroom",
     href: "/classroom",
     icon: Users,
-    requiresAuth: false,
+    requiresAuth: true,
   },
   {
     name: "Created Problems",
     href: "/created-problems",
     icon: Brain,
-    requiresAuth: false,
+    requiresAuth: true,
   },
 ];
 
@@ -69,11 +61,7 @@ export default function Navbar() {
   const handleSignOut = () => {
     console.log("Sign out clicked");
     logout();
-  };
-
-  const handleAuthRequiredClick = (e: React.MouseEvent, itemName: string) => {
-    e.preventDefault();
-    alert(`Please log in to access ${itemName}`);
+    window.location.href = "/";
   };
 
   return (
@@ -83,11 +71,11 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <Brain className="h-5 w-5" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white">
+                <Brain className="h-4 w-4" />
               </div>
-              <span className="hidden font-bold text-xl sm:inline-block">
-                AI Teach
+              <span className="hidden font-bold text-xl sm:inline-block font-montserrat">
+                Numerus
               </span>
             </Link>
           </div>
@@ -114,16 +102,7 @@ export default function Navbar() {
                   </Link>
                 );
               } else {
-                return (
-                  <button
-                    key={item.name}
-                    onClick={(e) => handleAuthRequiredClick(e, item.name)}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </button>
-                );
+                return null;
               }
             })}
           </div>
@@ -148,9 +127,6 @@ export default function Navbar() {
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -165,15 +141,6 @@ export default function Navbar() {
                       </p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -244,10 +211,6 @@ export default function Navbar() {
                         return (
                           <button
                             key={item.name}
-                            onClick={(e) => {
-                              handleAuthRequiredClick(e, item.name);
-                              setIsOpen(false);
-                            }}
                             className="flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer text-left"
                           >
                             <Icon className="h-5 w-5" />
@@ -289,22 +252,6 @@ export default function Navbar() {
                         </div>
                         <Button
                           variant="ghost"
-                          className="justify-start px-3 py-3 h-auto"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <User className="mr-3 h-5 w-5" />
-                          Profile
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="justify-start px-3 py-3 h-auto"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <Settings className="mr-3 h-5 w-5" />
-                          Settings
-                        </Button>
-                        <Button
-                          variant="ghost"
                           className="justify-start px-3 py-3 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => {
                             handleSignOut();
@@ -330,7 +277,7 @@ export default function Navbar() {
                           asChild
                           onClick={() => setIsOpen(false)}
                         >
-                          <Link href="/signup">Sign up</Link>
+                          <Link href="/register">Sign up</Link>
                         </Button>
                       </div>
                     )}
