@@ -26,7 +26,7 @@ import {
 import { createProblem } from "@/services/problem-service";
 import { useAuth } from "@/contexts/AuthContext";
 import UploadImage from "./UploadImage";
-// import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export default function ManualProblemForm() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -56,23 +56,18 @@ export default function ManualProblemForm() {
     }
   }, [searchParams, form]);
 
-
   const handleSubmit = async (data: ProblemFormData) => {
     if (authLoading) {
-      // toast({
-      //   title: "Authentication in progress",
-      //   description: "Please wait until authentication is complete.",
-      //   variant: "destructive",
-      // });
+      toast.error(
+        "Authentication in progress. Please wait until authentication is complete."
+      );
       return;
     }
 
     if (!user?.id) {
-      // toast({
-      //   title: "Authentication Required",
-      //   description: "You need to be logged in to create a problem.",
-      //   variant: "destructive",
-      // });
+      toast.error(
+        "Authentication Required. You need to be logged in to create a problem."
+      );
       return;
     }
 
@@ -92,10 +87,9 @@ export default function ManualProblemForm() {
       console.log("Creating problem manually:", problemData);
       await createProblem(problemData, user.id);
 
-      // toast({
-      //   title: "Problem Created! 🎉",
-      //   description: "Your new math problem has been successfully created.",
-      // });
+      toast.success("Problem Created! 🎉", {
+        description: "Your new math problem has been successfully created.",
+      });
       if (finalClassroomId) {
         router.push(`/classrooms/${finalClassroomId}`);
       } else {
@@ -103,15 +97,12 @@ export default function ManualProblemForm() {
       }
     } catch (error) {
       console.error("Failed to create problem:", error);
-      // toast({
-      //   title: "Uh oh! Something went wrong.",
-      //   description:
-      //     error instanceof Error
-      //       ? error.message
-      //       : "Failed to create problem. Please try again.",
-      //   variant: "destructive",
-      // });
-    } finally {
+      toast.error("Uh oh! Something went wrong.", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create problem. Please try again.",
+      });
       setIsSubmitting(false);
     }
   };
@@ -121,10 +112,7 @@ export default function ManualProblemForm() {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6"
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
@@ -215,7 +203,8 @@ export default function ManualProblemForm() {
                 </div>
               </FormControl>
               <FormDescription>
-                Add an optional image to accompany your problem. You can either paste a URL or upload an image.
+                Add an optional image to accompany your problem. You can either
+                paste a URL or upload an image.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -240,7 +229,6 @@ export default function ManualProblemForm() {
             )}
           />
         )}
-
 
         <FormField
           control={form.control}

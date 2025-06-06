@@ -51,7 +51,7 @@ const navigationItems = [
     name: "Created Problems",
     href: "/created-problems",
     icon: Brain,
-    requiresAuth: false,
+    requiresAuth: true,
   },
 ];
 
@@ -69,11 +69,6 @@ export default function Navbar() {
   const handleSignOut = () => {
     console.log("Sign out clicked");
     logout();
-  };
-
-  const handleAuthRequiredClick = (e: React.MouseEvent, itemName: string) => {
-    e.preventDefault();
-    alert(`Please log in to access ${itemName}`);
   };
 
   return (
@@ -114,16 +109,7 @@ export default function Navbar() {
                   </Link>
                 );
               } else {
-                return (
-                  <button
-                    key={item.name}
-                    onClick={(e) => handleAuthRequiredClick(e, item.name)}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </button>
-                );
+                return null;
               }
             })}
           </div>
@@ -244,10 +230,6 @@ export default function Navbar() {
                         return (
                           <button
                             key={item.name}
-                            onClick={(e) => {
-                              handleAuthRequiredClick(e, item.name);
-                              setIsOpen(false);
-                            }}
                             className="flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer text-left"
                           >
                             <Icon className="h-5 w-5" />
