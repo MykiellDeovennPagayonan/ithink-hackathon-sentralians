@@ -184,14 +184,14 @@ export default function SolutionSubmission({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Link href="/motoko-login" className="w-full">
+                <Link href="/login" className="w-full">
                   <Button variant="default" className="w-full">
                     <LogIn className="w-4 h-4 mr-2" />
                     Log In
                   </Button>
                 </Link>
 
-                <Link href="/motoko-register" className="w-full">
+                <Link href="/register" className="w-full">
                   <Button variant="outline" className="w-full">
                     <UserPlus className="w-4 h-4 mr-2" />
                     Sign Up

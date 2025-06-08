@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Search, Users, BookOpen, Plus } from "lucide-react";
+import { Users, BookOpen, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getPublicProblems } from "@/services/problem-service";
 import type { Problem } from "@/declarations/backend/backend.did";
@@ -20,7 +20,6 @@ import ProblemList from "@/components/problem-list";
 export default function ExplorePage() {
   const [classroomCode, setClassroomCode] = useState("");
   const [problemCode, setProblemCode] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -53,12 +52,8 @@ export default function ExplorePage() {
     }
   };
 
-  const filteredProblems = problems.filter((problem) => {
-    const matchesSearch =
-      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      problem.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch && problem.isPublic;
-  });
+  // Filter only public problems (no search filtering)
+  const publicProblems = problems.filter((problem) => problem.isPublic);
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50">
@@ -78,7 +73,7 @@ export default function ExplorePage() {
                 Enter Code for Classroom
               </CardTitle>
               <CardDescription className="text-sm">
-                Join an existing classroom with your access code
+                Join a classroom with your access code
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -129,27 +124,7 @@ export default function ExplorePage() {
           </Card>
         </div>
 
-        {/* Search */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-            <div className="relative flex-1 sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search problems..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10"
-              />
-            </div>
-            <Button
-              className="h-10 whitespace-nowrap"
-              onClick={() => router.push("/problem/create")}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Problem
-            </Button>
-          </div>
-        </div>
+        {/* Removed search input */}
 
         {/* Problems List Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -157,8 +132,8 @@ export default function ExplorePage() {
             Publicly Available Problems
           </h2>
           <span className="text-sm text-gray-500">
-            {filteredProblems.length} problem
-            {filteredProblems.length !== 1 ? "s" : ""} found
+            {publicProblems.length} problem
+            {publicProblems.length !== 1 ? "s" : ""} found
           </span>
         </div>
 
@@ -167,7 +142,7 @@ export default function ExplorePage() {
           <div className="flex justify-center py-12">
             <LoadingSpinner />
           </div>
-        ) : filteredProblems.length === 0 ? (
+        ) : publicProblems.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -175,9 +150,7 @@ export default function ExplorePage() {
                 No public problems found
               </h3>
               <p className="text-gray-500 mb-4">
-                {searchTerm
-                  ? `No problems match your search for "${searchTerm}"`
-                  : "No public problems are available yet."}
+                No public problems are available yet.
               </p>
               <Button onClick={() => router.push("/problem/create")}>
                 <Plus className="w-4 h-4 mr-2" />
@@ -186,7 +159,7 @@ export default function ExplorePage() {
             </CardContent>
           </Card>
         ) : (
-          <ProblemList problems={filteredProblems} isAdmin={false} />
+          <ProblemList problems={publicProblems} isAdmin={false} />
         )}
       </div>
     </div>

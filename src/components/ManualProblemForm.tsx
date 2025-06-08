@@ -91,7 +91,7 @@ export default function ManualProblemForm() {
         description: "Your new math problem has been successfully created.",
       });
       if (finalClassroomId) {
-        router.push(`/classrooms/${finalClassroomId}`);
+        router.push(`/classroom?code=${finalClassroomId}`);
       } else {
         router.push("/explore");
       }
