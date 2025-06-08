@@ -178,7 +178,6 @@ Ensure your wallet and identity are properly set up for Internet Computer deploy
 ## 8. Contributing
 
 > This project was developed as part of a **hackathon** initiative.  
-> While contributions are not currently open, the platform will evolve into a **commercial product**.  
 > Community involvement and feedback are welcome, but external code contributions are restricted for now.
 
 ---
@@ -193,6 +192,8 @@ This project uses various third-party assets and libraries.
 - **UI Components**: Built with [Radix UI](https://www.radix-ui.com/) and [Tailwind CSS](https://tailwindcss.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Camera**: [react-webcam](https://github.com/mozmorris/react-webcam)
+- **Math Typesetting**: [KaTeX](https://katex.org/) for beautiful mathematical equations
+
 
 ---
 
