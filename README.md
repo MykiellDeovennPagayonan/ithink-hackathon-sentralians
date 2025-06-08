@@ -1,3 +1,10 @@
+> 🚨 **This is the Server Repo!**  
+> Please **click the badge below** to access the backend source code and all server-related files.  
+> This is important for understanding the server setup and development.
+
+[![🚨 Hey! Here is the Server Repo! 🚨](https://img.shields.io/badge/%F0%9F%9A%A8-Hey%21%20Here%20is%20the%20Server%20Repo%21%20%F0%9F%9A%A8-brightgreen?logo=github&style=flat-square)](https://github.com/MykiellDeovennPagayonan/ithink-hackathon-sentralians-server)
+
+
 # Numerus
 
 > **Decentralized Collaborative AI Math Learning Platform**
