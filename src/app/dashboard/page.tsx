@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const { user, logout, loading } = useAuth();
@@ -10,17 +10,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/motoko-login');
+      router.push("/login");
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/motoko-login');
+      router.push("/login");
     } catch (error) {
-      console.error('Logout error:', error);
-      router.push('//motoko-login');
+      console.error("Logout error:", error);
+      router.push("/login");
     }
   };
 
@@ -74,17 +74,25 @@ export default function DashboardPage() {
                   <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Username</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{user.username}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Username
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {user.username}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Email</dt>
                   <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Created At</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Created At
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {new Date(Number(user.createdAt) / 1000000).toLocaleDateString()}
+                    {new Date(
+                      Number(user.createdAt) / 1000000
+                    ).toLocaleDateString()}
                   </dd>
                 </div>
               </dl>

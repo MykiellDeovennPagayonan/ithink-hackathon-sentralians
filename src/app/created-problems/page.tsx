@@ -7,7 +7,6 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import ProblemList from "@/components/problem-list";
-import ProblemSearch from "@/components/problem-search";
 import { getProblemsByUserId } from "@/services/problem-service";
 import { useGetCurrentUser } from "@/services/auth-service";
 import LoadingSpinner from "@/components/loading-spinner";
@@ -17,7 +16,6 @@ import type { Problem } from "@/declarations/backend/backend.did";
 export default function CreatedProblemsPageClient() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
-  const searchTerm = searchParams.get("search") || "";
   const [loading, setLoading] = useState(true);
 
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -101,9 +99,6 @@ export default function CreatedProblemsPageClient() {
           </Button>
         </div>
 
-        {/* Search */}
-        <ProblemSearch initialSearchTerm={searchTerm} />
-
         {/* Debug Info */}
         {process.env.NODE_ENV === "development" && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -142,13 +137,13 @@ function NotLoggedInView() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="h-12 px-8" asChild>
-              <Link href="/motoko-login">
+              <Link href="/login">
                 <LogIn className="mr-2 h-4 w-4" />
                 Log In
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8" asChild>
-              <Link href="/motoko-register">
+              <Link href="/register">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Sign Up
               </Link>

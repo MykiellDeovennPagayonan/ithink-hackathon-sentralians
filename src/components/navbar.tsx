@@ -65,13 +65,13 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <nav className="sticky max-h-16 top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-foreground text-white">
                 <Brain className="h-4 w-4" />
               </div>
               <span className="hidden font-bold text-xl sm:inline-block font-montserrat">
@@ -151,10 +151,10 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/motoko-login">Log in</Link>
+                  <Link href="/login">Log in</Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link href="/motoko-register">Sign up</Link>
+                  <Link href="/register">Sign up</Link>
                 </Button>
               </div>
             )}
@@ -179,10 +179,10 @@ export default function Navbar() {
                 <div className="flex flex-col space-y-4 mt-4">
                   {/* Mobile Logo */}
                   <div className="flex items-center space-x-2 px-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-foreground text-white">
                       <Brain className="h-5 w-5" />
                     </div>
-                    <span className="font-bold text-xl">AI Teach</span>
+                    <span className="font-bold text-xl">Numerus</span>
                   </div>
 
                   {/* Mobile Navigation */}
@@ -208,15 +208,7 @@ export default function Navbar() {
                           </Link>
                         );
                       } else {
-                        return (
-                          <button
-                            key={item.name}
-                            className="flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50 cursor-pointer text-left"
-                          >
-                            <Icon className="h-5 w-5" />
-                            <span>{item.name}</span>
-                          </button>
-                        );
+                        return null; // Hide the link completely when user is not authenticated
                       }
                     })}
                   </div>
@@ -236,9 +228,6 @@ export default function Navbar() {
                               ) : (
                                 <User className="h-4 w-4" />
                               )}
-                            </AvatarFallback>
-                            <AvatarFallback>
-                              <User className="h-4 w-4" />
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col">

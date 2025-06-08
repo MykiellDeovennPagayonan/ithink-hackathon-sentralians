@@ -35,8 +35,8 @@ const ClassroomCard = ({ title, problems, students } : { title : string, problem
 export default function About() {
   const showcases = [
     {
-      title: "Upload & Solve Problems",
-      description: "Upload handwritten math problems or type them directly. Our AI analyzes your work and provides instant feedback with step-by-step guidance.",
+      title: "Upload and Solve Problems",
+      description: "Upload your solution to math problems. Our AI analyzes your work and provides instant feedback with step-by-step guidance.",
       alignment: "left",
       component: (
         <div className="space-y-4">
@@ -53,8 +53,8 @@ export default function About() {
       ),
     },
     {
-      title: "Join Interactive Classrooms",
-      description: "Collaborate with classmates and teachers in virtual classrooms. Share problems, track progress, and learn together in real-time.",
+      title: "Virtual Classrooms",
+      description: "Join classrooms with your classmates and teachers. Solve problems as as class!",
       alignment: "right",
       component: (
         <div className="grid grid-cols-1 gap-4">
@@ -65,8 +65,8 @@ export default function About() {
       ),
     },
     {
-      title: "Track Your Progress",
-      description: "Monitor your learning journey with detailed analytics. See your completion rates, difficulty progression, and identify areas for improvement.",
+      title: "Track Your Progress (Coming Soon!)",
+      description: "Monitor your learning journey with detailed analytics. See your completion rates and identify areas for improvement.",
       alignment: "left",
       component: (
         <Card className="bg-gray-800 border-gray-700">
@@ -130,7 +130,7 @@ export default function About() {
             What is Numerus?
           </h2>
           <p className="text-lg text-gray-300 font-light max-w-2xl mx-auto">
-            Your AI-powered mathematics learning companion that transforms how you solve problems and learn concepts.
+            A math learning platform through practice.
           </p>
         </div>
 

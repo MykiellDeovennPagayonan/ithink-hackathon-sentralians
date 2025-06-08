@@ -11,10 +11,11 @@ import { Label } from "@/components/ui/label";
 import ProblemDisplay from "@/components/problem/problem-display";
 import { createProblem } from "@/services/problem-service";
 import { useAuth } from "@/contexts/AuthContext";
-// import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface Problem {
-  title: string
+  title: string;
   difficulty: string;
   topic: string;
   problem_latex: string;
@@ -49,6 +50,12 @@ export default function AiProblemGeneratorForm() {
   const searchParams = useSearchParams();
   const classroomIdFromQuery = searchParams.get("classroomId");
   const { user, loading: authLoading } = useAuth();
+  const [creatingIndexes, setCreatingIndexes] = useState<Set<number>>(
+    new Set()
+  );
+  const [createdProblems, setCreatedProblems] = useState<Set<string>>(
+    new Set()
+  );
 
   const handleGenerate = async () => {
     if (!topic.trim() && !referenceQuestion.trim()) {
@@ -97,7 +104,7 @@ export default function AiProblemGeneratorForm() {
     { topic: "", question: "What is 15% of 240?" },
   ];
 
-  const loadPreset = (preset: typeof presetExamples[0]) => {
+  const loadPreset = (preset: (typeof presetExamples)[0]) => {
     setTopic(preset.topic);
     setReferenceQuestion(preset.question);
     setError(null);
@@ -105,37 +112,45 @@ export default function AiProblemGeneratorForm() {
 
   const canGenerate = topic.trim() || referenceQuestion.trim();
 
-  const handleUseAiProblem = (problem: Problem) => {
-    console.log("Attempting to use AI Problem:", problem);
-
+  const handleUseAiProblem = async (problem: Problem, index: number) => {
     const userId = user?.id;
     if (!userId) {
       setError("You must be logged in to create problems.");
       return;
     }
 
-    if (classroomIdFromQuery) {
-      console.log("Target Classroom ID:", classroomIdFromQuery);
+    const problemKey = `${problem.title}|${problem.problem_latex}`;
+    if (createdProblems.has(problemKey)) {
+      toast.info("This problem has already been created.");
+      return;
+    }
 
-      const problemData = {
-        title: problem.title,
-        description: problem.problem_latex,
-        imageUrl: null,
-        classroomId: classroomIdFromQuery,
-        isPublic: isPublic,
-      };
+    setCreatingIndexes((prev) => new Set(prev).add(index));
 
-      createProblem(problemData, userId);
-    } else {
-      const problemData = {
-        title: problem.title,
-        description: problem.problem_latex,
-        imageUrl: null,
-        classroomId: null,
-        isPublic: isPublic,
-      };
+    const problemData = {
+      title: problem.title,
+      description: problem.problem_latex,
+      imageUrl: null,
+      classroomId: classroomIdFromQuery ?? null,
+      isPublic: isPublic,
+    };
 
-      createProblem(problemData, userId);
+    try {
+      await createProblem(problemData, userId);
+      setCreatedProblems((prev) => new Set(prev).add(problemKey));
+
+      toast.success("Problem created successfully!", {
+        description: `"${problem.title}" has been added to the classroom.`,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Failed to create problem");
+    } finally {
+      setCreatingIndexes((prev) => {
+        const next = new Set(prev);
+        next.delete(index);
+        return next;
+      });
     }
   };
 
@@ -146,7 +161,8 @@ export default function AiProblemGeneratorForm() {
       </h2>
       {classroomIdFromQuery && (
         <p className="text-sm text-muted-foreground mb-4">
-          ✨ Problems generated here can be associated with Classroom ID: <span className="font-semibold">{classroomIdFromQuery}</span>.
+          ✨ Problems generated here can be associated with Classroom ID:{" "}
+          <span className="font-semibold">{classroomIdFromQuery}</span>.
         </p>
       )}
 
@@ -241,8 +257,9 @@ export default function AiProblemGeneratorForm() {
         >
           {loading
             ? "Generating..."
-            : `Generate ${numQuestions} Problem${numQuestions !== 1 ? "s" : ""
-            }`}
+            : `Generate ${numQuestions} Problem${
+                numQuestions !== 1 ? "s" : ""
+              }`}
         </Button>
       </div>
 
@@ -256,29 +273,52 @@ export default function AiProblemGeneratorForm() {
       {result && result.function_call?.function?.arguments?.problems && (
         <div className="mt-6 space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
-            Generated Problems ({result.function_call.function.arguments.problems.length})
+            Generated Problems (
+            {result.function_call.function.arguments.problems.length})
           </h3>
 
           <div className="grid gap-4">
-            {result.function_call.function.arguments.problems.map((problem, index) => (
-              <div key={index} className="relative">
-                <ProblemDisplay
-                  problem={adaptProblemForDisplay(problem)}
-                  className="w-full"
-                />
-                <div className="absolute top-4 right-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUseAiProblem(problem)}
-                    className="bg-background/80 backdrop-blur-sm"
-                    disabled={!user?.id || authLoading}
-                  >
-                    {!user?.id ? "Login Required" : "Use Problem"}
-                  </Button>
+            {result.function_call.function.arguments.problems.map(
+              (problem, index) => (
+                <div key={index} className="relative">
+                  <ProblemDisplay
+                    problem={adaptProblemForDisplay(problem)}
+                    className="w-full"
+                  />
+                  <div className="absolute top-4 right-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUseAiProblem(problem, index)}
+                      className="bg-background/80 backdrop-blur-sm"
+                      disabled={
+                        !user?.id ||
+                        authLoading ||
+                        creatingIndexes.has(index) ||
+                        createdProblems.has(
+                          `${problem.title}|${problem.problem_latex}`
+                        )
+                      }
+                    >
+                      {!user?.id ? (
+                        "Login Required"
+                      ) : createdProblems.has(
+                          `${problem.title}|${problem.problem_latex}`
+                        ) ? (
+                        "Already Used"
+                      ) : creatingIndexes.has(index) ? (
+                        <div className="flex items-center gap-1">
+                          <Loader2 className="animate-spin h-4 w-4" />
+                          Saving...
+                        </div>
+                      ) : (
+                        "Use Problem"
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
 
           <details className="mt-4">
@@ -297,8 +337,7 @@ export default function AiProblemGeneratorForm() {
           result.function_call.function.arguments.problems.length === 0) && (
           <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-md">
             <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-              No problems were generated. You can see the raw AI response
-              below.
+              No problems were generated. You can see the raw AI response below.
             </p>
             <details className="mt-2">
               <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">

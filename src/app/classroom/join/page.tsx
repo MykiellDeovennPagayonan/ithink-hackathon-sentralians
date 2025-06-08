@@ -307,7 +307,7 @@ export default function JoinClassroomPage() {
           </CardHeader>
           <CardContent>
             <Button
-              onClick={() => router.push("/motoko-login")}
+              onClick={() => router.push("/login")}
               className="w-full"
               size="lg"
             >

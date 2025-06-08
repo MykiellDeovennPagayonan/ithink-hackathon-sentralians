@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState('');
+  const [validationError, setValidationError] = useState("");
   const { register, user, loading, error } = useAuth();
   const router = useRouter();
 
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, loading, router]);
 
@@ -27,27 +27,27 @@ export default function RegisterPage() {
     if (isSubmitting) return;
 
     // Client-side validation
-    setValidationError('');
+    setValidationError("");
     if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
+      setValidationError("Passwords do not match");
       return;
     }
     if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters long');
+      setValidationError("Password must be at least 6 characters long");
       return;
     }
     if (username.trim().length < 2) {
-      setValidationError('Username must be at least 2 characters long');
+      setValidationError("Username must be at least 2 characters long");
       return;
     }
 
     setIsSubmitting(true);
     try {
       await register(email, password, username);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error) {
       // Error is handled by AuthContext
-      console.error('Registration failed:', error);
+      console.error("Registration failed:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -149,13 +149,13 @@ export default function RegisterPage() {
               disabled={isSubmitting}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Creating account...' : 'Sign up'}
+              {isSubmitting ? "Creating account..." : "Sign up"}
             </button>
           </div>
 
           <div className="text-center">
-            <Link 
-              href="/motoko-login" 
+            <Link
+              href="/login"
               className="text-indigo-600 hover:text-indigo-500"
             >
               Already have an account? Sign in
