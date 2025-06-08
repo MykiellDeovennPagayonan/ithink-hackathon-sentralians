@@ -18,7 +18,7 @@ export async function validateSolution(
   imageUrl: string
 ): Promise<FunctionCallResponse> {
   try {
-    const response = await fetch(`${SERVER_URL}/api/ai/validate-solution`, {
+    const response = await fetch(`${SERVER_URL}/api/ai/ask-wolfram`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

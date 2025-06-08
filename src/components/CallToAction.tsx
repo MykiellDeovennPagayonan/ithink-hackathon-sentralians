@@ -29,26 +29,6 @@ export default function CallToActionSection() {
           <p className="text-lg text-gray-300 font-light max-w-2xl mx-auto mb-12">
             Soon thousands of students and educators will be transforming their mathematical learning experience with Numerus.
           </p>
-          
-          {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 mb-12">
-            {stats.map((stat, index) => (
-              <Card key={index} className="border-0 shadow-lg bg-gray-900/50 backdrop-blur-sm">
-                <CardContent className="text-center py-8">
-                  <div className="flex justify-center mb-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600">
-                      <stat.icon className="h-6 w-6" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-gray-400 font-light">
-                    {stat.label}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div> */}
         </div>
 
 
@@ -103,12 +83,6 @@ export default function CallToActionSection() {
                       </Link>
                     </Button>
                   </div>
-
-                  {/* <div className="mt-6 text-center">
-                    <p className="text-green-100 text-sm font-light">
-                      No credit card required • Free forever plan available
-                    </p>
-                  </div> */}
                 </div>
               </div>
             </div>

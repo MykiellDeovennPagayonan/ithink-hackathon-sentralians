@@ -32,9 +32,9 @@ export default function HomeHero() {
         </h1>
 
         <p className="text-lg md:text-xl text-gray-300 mb-8">
-          Create, solve and learn from mathematical problems with the help of
-          artificial intelligence. Join classrooms, track progress, and get
-          personalized feedback.
+          Create, practice and learn from mathematical problems with the help of
+          artificial intelligence. Join classrooms, solve problems, and get
+           feedback.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
