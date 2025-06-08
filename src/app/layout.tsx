@@ -6,8 +6,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "AI Teaching Platform",
-  description: "Discover AI-powered learning experiences",
+  title: "Numerus",
+  description: "Decentralized Collaborative AI Math Learning Platform",
 };
 
 export default function RootLayout({

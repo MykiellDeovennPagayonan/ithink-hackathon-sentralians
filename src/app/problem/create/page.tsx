@@ -70,13 +70,13 @@ export default function CreateProblemPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
                 <Button asChild className="flex-1">
-                  <Link href="/motoko-login">
+                  <Link href="/login">
                     <LogIn className="mr-2 h-4 w-4" />
                     Log In
                   </Link>
                 </Button>
                 <Button variant="outline" asChild className="flex-1">
-                  <Link href="/motoko-register">
+                  <Link href="/register">
                     <UserPlus className="mr-2 h-4 w-4" />
                     Sign Up
                   </Link>
