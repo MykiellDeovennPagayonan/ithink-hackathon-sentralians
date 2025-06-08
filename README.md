@@ -133,8 +133,19 @@ NEXT_PUBLIC_SERVER_URL=http://localhost:8000 #this is for the server
 ### 7. Run the development server
 
 ```bash
+# Start the Next.js frontend
 npm run dev
+
+# Navigate to the backend repo
+# Start Express.js server (backend)
+npm run build
+npm run start
 ```
+
+This will launch:
+
+- The frontend at `http://localhost:3000`
+- The backend API at `http://localhost:8000`
 
 ---
 
