@@ -1,104 +1,202 @@
-# iThink Hackathon - AI Teaching Platform
+# Numerus
 
-An AI-powered platform for mathematical problem solving and education, built for the iThink Hackathon.
+> **Decentralized Collaborative AI Math Learning Platform**
 
-## Features
+Numerus is a decentralized platform where students enhance their math skills through AI-powered practice and community collaboration. Users can access a catalog of publicly submitted problems across advanced topics like **calculus**, **linear algebra**, **differential equations**, and **engineering economics**—solve them, and receive **AI-driven validation and feedback**.
 
-- Interactive problem solving interface
-- Camera capture for handwritten solutions using react-webcam
-- LaTeX equation rendering with MathJax
-- Classroom management system
-- Real-time collaboration tools
-- Responsive design with Tailwind CSS
+Built on the **Internet Computer Protocol (ICP)**, Numerus is not just another educational platform—it's a community-owned ecosystem. It empowers learners, educators, and contributors through:
 
-## Tech Stack
+- **Decentralized content creation**
+- **Mathematical AI tutoring with LaTeX support**
+- **Teacher-managed classrooms with real-time tracking**
+- **Permanent and secure educational content via blockchain**
 
-- **Framework**: Next.js 15.1.8 with React 19
-- **Styling**: Tailwind CSS 3.4.1
-- **UI Components**: Radix UI primitives
-- **Camera**: react-webcam 7.2.0
-- **Icons**: Lucide React 0.511.0
-- **Math Rendering**: MathJax 3
-- **TypeScript**: Full type safety
+---
 
-## Getting Started
+## 1. Project Name
 
-### Prerequisites
+**Numerus**
 
-- Node.js 18+
-- npm or yarn
+---
 
-### Installation
+## 2. Project Description
 
-1. Clone the repository
-   \`\`\`bash
-   git clone https://github.com/MykiellDeovennPagayonan/ithink-hackathon-sentralians.git
-   cd ithink-hackathon
-   \`\`\`
+Numerus is a decentralized platform where students can improve their math skills through practice. Users can view a catalog of publicly created math problems and attempt to solve them. An AI system validates the solution and provides step-by-step feedback to reach the correct answer.
 
-2. Install dependencies
-   \`\`\`bash
-   npm install
-   \`\`\`
+The platform addresses a gap in education by covering advanced math topics like:
 
-3. Run the development server
-   \`\`\`bash
-   npm run dev
-   \`\`\`
+- Calculus
+- Linear Algebra
+- Differential Equations
+- Engineering Economics
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+Numerus is built on the Internet Computer Protocol (ICP) blockchain, making it truly decentralized. Any user can contribute problems to the shared repository, enhancing platform resilience and democratizing access to math education.
 
-## Project Structure
+Educators can create custom classrooms, assign problems, and track student progress in real time.
 
-\`\`\`
-ithink-hackathon/
-├── app/ # Next.js 15 App Router
-│ ├── explore/ # Problem exploration page
-│ ├── classroom/ # Classroom management
-│ ├── problem/ # Individual problem pages
-│ └── layout.tsx # Root layout with MathJax
-├── components/ # Reusable UI components
-│ ├── ui/ # shadcn/ui components
-│ ├── navbar.tsx # Navigation component
-│ └── camera-capture.tsx # Camera functionality
-├── mockdata/ # Mock data for development
-└── public/ # Static assets
-\`\`\`
+---
 
-## Third-Party Attributions
+## 3. Tech Stack
 
-This project uses various third-party assets and libraries. See [LICENSES.md](LICENSES.md) for complete attribution and licensing information.
+### Web Interface (Next.js)
+
+- Responsive UI for students, teachers, and contributors
+- LaTeX math editor
+- Problem catalog and classroom manager
+
+### ICP Frontend Canister
+
+- Decentralized static asset hosting
+
+### Backend API (Express.js on Render)
+
+- Handles API integrations and business logic
+- Communicates between frontend and blockchain
+
+### ICP Motoko Backend Canister
+
+- Smart contracts for authentication, storage, and classroom logic
+
+### RxMoDB
+
+- Blockchain-based database for problems, classrooms, and analytics
+
+### OpenAI Integration
+
+- AI feedback and validation of math solutions
+
+### Wolfram API
+
+- Advanced math computations and symbolic processing
+
+### UploadThing
+
+- File/image uploads for problem and solution submissions
+
+---
+
+## 4. Prerequisites
+
+Make sure the following tools are installed:
+
+- **WSL 2** (Windows Subsystem for Linux)
+- **Node.js** (v18+ recommended)
+- **npm**
+- **dfx** (DFINITY SDK)
+- **mops** (Motoko package manager)
+
+> 💡 Run all commands inside the WSL terminal if you're on Windows.
+
+---
+
+## 5. Local Development Setup
+
+### 1. Launch WSL (for Windows)
+
+```bash
+wsl
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+mops install
+```
+
+### 3. Start the local replica
+
+```bash
+dfx start --background
+```
+
+### 4. Create the backend canister
+
+```bash
+dfx canister create backend
+```
+
+### 5. Retrieve the canister ID
+
+```bash
+dfx canister id backend
+```
+
+### 6. Set up environment variables in `.env` file
+
+```env
+NEXT_PUBLIC_CANISTER_ID_BACKEND=your_canister_id_here
+CANISTER_ID_BACKEND=your_canister_id_here
+NEXT_PUBLIC_SERVER_URL=http://localhost:8000 #this is for the server
+```
+
+### 7. Run the development server
+
+```bash
+# Start the Next.js frontend
+npm run dev
+
+# Navigate to the backend repo
+# Start Express.js server (backend)
+npm run dev
+```
+
+This will launch:
+
+- The frontend at `http://localhost:3000`
+- The backend API at `http://localhost:8000`
+
+---
+
+## 6. Usage
+
+- Visit `http://localhost:3000`
+- Browse problems or join/create a classroom
+- Submit a solution and receive AI feedback
+- Teachers can assign problems and track progress
+
+---
+
+## 7. Deployment
+
+### Local Deployment for testing
+
+```bash
+dfx deploy
+```
+
+### Web Deployment to ICP
+
+```bash
+dfx deploy --network ic
+```
+
+Ensure your wallet and identity are properly set up for Internet Computer deployment.
+
+---
+
+## 8. Contributing
+
+> This project was developed as part of a **hackathon** initiative.  
+> Community involvement and feedback are welcome, but external code contributions are restricted for now.
+
+---
+
+## 9. Third-Party Attributions
+
+This project uses various third-party assets and libraries.
 
 ### Notable Attributions
 
 - **SVG Icons**: Some icons sourced from [SVGRepo](https://www.svgrepo.com) under CC0 License
 - **UI Components**: Built with [Radix UI](https://www.radix-ui.com/) and [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/) for iconography
-- **Camera**: [react-webcam](https://github.com/mozmorris/react-webcam) for camera functionality
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Camera**: [react-webcam](https://github.com/mozmorris/react-webcam)
+- **Math Typesetting**: [KaTeX](https://katex.org/) for beautiful mathematical equations
 
-## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Hackathon Notes
-
-This project was developed for the iThink Hackathon, focusing on innovative AI-powered educational tools. The platform demonstrates:
-
-- Modern web development practices with Next.js 15
-- Accessible UI design with Radix UI
-- Real-time camera integration for solution capture
-- Mathematical equation rendering
-- Responsive design for all devices
+---
 
 ## Acknowledgments
 
-- Thanks to SVGRepo for providing high-quality SVG assets
-- Built with Next.js 15 and React 19
-- Styled with Tailwind CSS
-- UI components from Radix UI
-- Camera functionality powered by react-webcam
 - Special thanks to the iThink Hackathon organizers
