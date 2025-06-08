@@ -138,8 +138,7 @@ npm run dev
 
 # Navigate to the backend repo
 # Start Express.js server (backend)
-npm run build
-npm run start
+npm run dev
 ```
 
 This will launch:
